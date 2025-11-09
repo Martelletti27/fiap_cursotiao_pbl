@@ -82,7 +82,7 @@ CREATE TABLE "RM566767"."SENSORES_FAZENDA"
   PCTINCREASE 0 FREELISTS 1 FREELIST GROUPS 1
   BUFFER_POOL DEFAULT FLASH_CACHE DEFAULT CELL_FLASH_CACHE DEFAULT)
   TABLESPACE "TSBC_ALUNOS";
-
+```
 
 ### 9. Execute a validação final
 Realize a validação da importação executando o comando SQL abaixo para visualizar os registros carregados na tabela.
