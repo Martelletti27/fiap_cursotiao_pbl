@@ -28,26 +28,26 @@ O grupo FarmTech Solutions propõe o desenvolvimento de sistemas inteligentes pa
 
 ## 🗂 ESTRUTURA GERAL
 
-  fiap_cursotiao_pbl/
-    │
-    ├─ Fase 1/                                
-    │   ├─ apps/
-	│	│	├─python_app/				#CLI para calculo de manejo
-	│	│	├─r_app/					#Analise de aplicacao e API Meteorologica
-	│	│
-    │   └─ docs/						#Link youtube do funcionamento
-	│
-    ├─ Fase 2/                                
-    │   ├─ apps/
-	│	│	├─esp32_app/				#Automacao de irrigacao com ESP32
-	│	│	├─python_integration/		#Integracao com API Meteorologica
-	│	│	├─r_integration/			#Análise para decisão inteligente de irrigação
-	│	│
-    │   └─ docs/						#
-	│
-    ├─ Fase 3/   
-	│
-    └─ README.md                            # Este arquivo
+	  fiap_cursotiao_pbl/
+	    │
+	    ├─ Fase 1/                                
+	    │   ├─ apps/
+		│	│	├─python_app/				#CLI para calculo de manejo
+		│	│	├─r_app/					#Analise de aplicacao e API Meteorologica
+		│	│
+	    │   └─ docs/						#Link youtube do funcionamento
+		│
+	    ├─ Fase 2/                                
+	    │   ├─ apps/
+		│	│	├─esp32_app/				#Automacao de irrigacao com ESP32
+		│	│	├─python_integration/		#Integracao com API Meteorologica
+		│	│	├─r_integration/			#Análise para decisão inteligente de irrigação
+		│	│
+	    │   └─ docs/						#
+		│
+	    ├─ Fase 3/   
+		│
+	    └─ README.md                            # Este arquivo
 
 ## 🔧 Como executar o código
 
