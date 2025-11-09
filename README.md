@@ -28,25 +28,25 @@ O grupo FarmTech Solutions propõe o desenvolvimento de sistemas inteligentes pa
 
 ## 🗂 ESTRUTURA GERAL
 
-    fiap-cap1-farmtech/
+  fiap_cursotiao_pbl/
     │
-    ├─ docs/                                # Documentação, imagens e relatórios
-    │   ├─ fase1_manejo_culturas/
-    │   └─ fase2_irrigacao_inteligente/
-    │   └─ fase.../
-    │
-    ├─ apps/
-    │   ├─ cli_manejo_culturas/             # Fase 1 (Python + R)
-    │   │   ├─ python_app/
-    │   │   └─ r_app/
-    │   │
-    │   └─ esp32_irrigacao_inteligente/     # Fase 2 (ESP32 + API + R)
-    │   │   ├─ esp32_app/
-    │   │   ├─ python_integration/
-    │   │   └─ r_integration/
-    │   │
-    │   └─ novos_projetos.../               # Fase...
-    │   
+    ├─ Fase 1/                                
+    │   ├─ apps/
+	│	│	├─python_app/				#CLI para calculo de manejo
+	│	│	├─r_app/					#Analise de aplicacao e API Meteorologica
+	│	│
+    │   └─ docs/						#Link youtube do funcionamento
+	│
+    ├─ Fase 2/                                
+    │   ├─ apps/
+	│	│	├─esp32_app/				#Automacao de irrigacao com ESP32
+	│	│	├─python_integration/		#Integracao com API Meteorologica
+	│	│	├─r_integration/			#Análise para decisão inteligente de irrigação
+	│	│
+    │   └─ docs/						#
+	│
+    ├─ Fase 3/   
+	│
     └─ README.md                            # Este arquivo
 
 ## 🔧 Como executar o código
