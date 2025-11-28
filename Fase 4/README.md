@@ -1,14 +1,14 @@
 # 🌾 Sistema Inteligente de Manejo Agrícola
 
-Sistema completo de Machine Learning para previsão de umidade do solo, classificação de irrigação e recomendações inteligentes para gestão agrícola.
+Sistema completo de Machine Learning para previsão de umidade do solo e recomendações inteligentes para gestão agrícola, com integração de dados meteorológicos em tempo real.
 
 ## 📋 Características
 
-- **FASE 1 - Regressão**: 5 modelos para prever Umidade do Solo (com e sem PCA)
-- **FASE 2 - Classificação**: 5 modelos para prever acionamento de irrigação
-- **API Meteorológica**: Integração com previsão do tempo
+- **Modelos de Regressão**: 5 algoritmos para prever Umidade do Solo
+- **API Meteorológica**: Integração automática com Open-Meteo (gratuita, sem cadastro)
 - **Recomendações Inteligentes**: Cronograma automático de irrigação para 7 dias
 - **Dashboard Interativo**: Interface Streamlit com 5 abas completas
+- **Carregamento Automático**: Dados meteorológicos carregados automaticamente por município
 
 ## 🚀 Instalação
 
@@ -40,74 +40,101 @@ python run.py
 Fase 4/
 ├── config.py                 # Configurações globais
 ├── data_loader.py            # Carregamento e pré-processamento
-├── phase1_regression.py      # Modelos de regressão (FASE 1)
-├── phase2_classification.py  # Modelos de classificação (FASE 2)
-├── weather_api.py            # Integração com API meteorológica
+├── phase1_regression.py      # Modelos de regressão
+├── weather_api.py            # Integração com API meteorológica (Open-Meteo)
 ├── recommendations.py        # Sistema de recomendações
 ├── dashboard.py              # Interface Streamlit principal
+├── run.py                    # Script de execução
+├── test_api.py              # Script de teste da API
 ├── requirements.txt          # Dependências Python
-└── README.md                 # Este arquivo
+├── README.md                 # Este arquivo
+├── CONFIGURACAO_API.md       # Documentação da API
+└── QUICKSTART.md             # Guia rápido de início
 ```
 
 ## 🔧 Funcionalidades
 
 ### Aba Resumo
 - Métricas gerais do dataset
-- Séries temporais interativas
-- Importância das variáveis
+- Séries temporais interativas (últimos 120 dias)
+- Importância das variáveis (Random Forest)
 
 ### Aba Análise
 - Análise exploratória com gráficos
-- Séries temporais com média móvel
+- Séries temporais com média móvel configurável
 - Histogramas de distribuição
+- Estatísticas descritivas
 
 ### Aba Previsão
 - Interface para prever umidade do solo
-- Inputs personalizados
-- Explicação baseada em importância
+- Inputs personalizados (temperatura, chuva, umidade do ar, etc.)
+- Recomendação automática de irrigação
+- Análise detalhada da recomendação
 
 ### Aba Recomendação
-- Previsão do tempo para 7 dias
+- Previsão do tempo para 7 dias (dados reais da API)
+- Mapa interativo do município
 - Cronograma de irrigação automático
-- Justificativas técnicas
+- Justificativas técnicas para cada dia
+- Gráficos de umidade prevista
 
 ### Aba ML
-- Comparação de todos os modelos
-- Métricas detalhadas
-- Análise PCA
-- Matrizes de confusão
+- Comparação de todos os modelos de regressão
+- Métricas detalhadas (MAE, MSE, RMSE, R²)
+- Gráfico de dispersão (valores reais vs previstos)
+- Seleção automática do melhor modelo
 
 ## 📊 Modelos Implementados
 
-### Regressão (FASE 1)
-1. Linear Regression
-2. Ridge Regression
-3. Lasso Regression
-4. Random Forest Regressor
-5. Gradient Boosting Regressor
+### Regressão
+1. **Linear Regression** - Modelo linear simples
+2. **Ridge Regression** - Regularização L2
+3. **Lasso Regression** - Regularização L1
+4. **Random Forest Regressor** - Ensemble de árvores
+5. **Gradient Boosting Regressor** - Boosting sequencial
 
-Todos com versões **com e sem PCA**.
-
-### Classificação (FASE 2)
-1. Logistic Regression
-2. Random Forest Classifier
-3. Gradient Boosting Classifier
-4. SVM
-5. KNN
+O sistema compara todos os modelos e seleciona automaticamente o melhor baseado no R² no conjunto de teste.
 
 ## 🌦 API Meteorológica
 
-O sistema suporta:
-- OpenWeatherMap (com API key)
-- Dados simulados (fallback automático)
+O sistema utiliza a **API Open-Meteo**, que oferece:
 
-Configure a variável de ambiente `WEATHER_API_KEY` para usar API real.
+- ✅ **Totalmente gratuita** - Sem custos ou limites rígidos
+- ✅ **Sem cadastro necessário** - Funciona imediatamente
+- ✅ **Sem chave de API** - Não precisa configurar nada
+- ✅ **Dados confiáveis** - Baseados em modelos meteorológicos profissionais
+- ✅ **Carregamento automático** - Dados carregados ao selecionar município
+
+### Municípios Suportados
+
+- São Paulo
+- Campinas
+- Ribeirão Preto
+- Piracicaba
+- Londrina
+- Cascavel
+- Maringá
+
+Para mais informações, consulte [CONFIGURACAO_API.md](CONFIGURACAO_API.md).
+
+## 🧪 Testando a API
+
+Para testar se a API está funcionando:
+
+```bash
+cd "Fase 4"
+python test_api.py
+```
+
+O script testa todos os municípios cadastrados e exibe um relatório completo.
 
 ## 📝 Notas
 
 - Os modelos são treinados automaticamente ao carregar os dados
-- O melhor modelo é selecionado automaticamente
-- Todas as previsões incluem explicações baseadas em importância de features
+- O melhor modelo é selecionado automaticamente baseado em R²
+- Dados meteorológicos são carregados automaticamente ao selecionar município
+- Cache inteligente evita requisições desnecessárias à API
+- Sistema exibe status da API no menu lateral
 
 ## 🔍 Requisitos
 
@@ -116,7 +143,15 @@ Configure a variável de ambiente `WEATHER_API_KEY` para usar API real.
 - Scikit-learn 1.3+
 - Pandas 2.0+
 - Plotly 5.17+
+- Requests 2.31+
 
 ## 📄 Licença
 
 Este projeto foi desenvolvido para fins educacionais.
+
+## 🆘 Suporte
+
+Para problemas ou dúvidas:
+1. Verifique o arquivo [QUICKSTART.md](QUICKSTART.md) para guia rápido
+2. Consulte [CONFIGURACAO_API.md](CONFIGURACAO_API.md) para questões sobre a API
+3. Execute `python test_api.py` para diagnosticar problemas com a API

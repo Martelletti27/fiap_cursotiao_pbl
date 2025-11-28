@@ -34,9 +34,24 @@ DATA_FILE = os.path.join(DATA_DIR, "base_sintetica_pivo_2025.csv")
 # O sistema usa OpenWeatherMap por padrão, mas pode ser configurado
 # para outras APIs através das variáveis de ambiente
 
-WEATHER_API_KEY = os.getenv("WEATHER_API_KEY", "")
-WEATHER_API_URL = "http://api.openweathermap.org/data/2.5/forecast"
-INMET_API_URL = "https://apitempo.inmet.gov.br/estacao"
+# API Open-Meteo (gratuita, sem necessidade de cadastro ou chave)
+# Não é necessário configurar chave de API - a API é totalmente gratuita
+# Documentação: https://open-meteo.com/en/docs
+WEATHER_API_KEY = ""  # Não utilizado - mantido para compatibilidade
+
+# URL da API Open-Meteo para previsão meteorológica
+WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast"
+
+# Lista de municípios cadastrados no sistema
+MUNICIPIOS_CADASTRADOS = [
+    "São Paulo",
+    "Campinas",
+    "Ribeirão Preto",
+    "Piracicaba",
+    "Londrina",
+    "Cascavel",
+    "Maringá"
+]
 
 # ============================================================================
 # CONFIGURAÇÕES DE MODELOS DE MACHINE LEARNING
@@ -57,26 +72,6 @@ TEST_SIZE = 0.2
 REGRESSION_TARGET = "Umidade do Solo"
 
 REGRESSION_FEATURES = [
-    "PH",
-    "Temperatura",
-    "Nível de Nitrogênio",
-    "Nível de Fósforo",
-    "Nível de Potássio",
-    "Probabilidade de Chuva",
-    "Chuva Real (mm)",
-]
-
-# ============================================================================
-# CONFIGURAÇÕES PARA FASE 2 - CLASSIFICAÇÃO
-# ============================================================================
-# Define a variável alvo e features para prever se o sistema de irrigação
-# será acionado (Relay_On = 1) ou não (Relay_On = 0)
-# Inclui a umidade do solo como feature, pois ela influencia a decisão de irrigar
-
-CLASSIFICATION_TARGET = "Relay_On"
-
-CLASSIFICATION_FEATURES = [
-    "Umidade do Solo",
     "PH",
     "Temperatura",
     "Nível de Nitrogênio",

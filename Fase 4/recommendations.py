@@ -3,8 +3,7 @@ Sistema de Recomendações Inteligentes de Irrigação
 
 Este módulo gera recomendações automáticas de irrigação baseadas em previsões
 meteorológicas, modelos de machine learning e regras de negócio. Combina a
-previsão de umidade do solo (modelo de regressão) com a previsão de acionamento
-de irrigação (modelo de classificação) e dados meteorológicos para criar um
+previsão de umidade do solo (modelo de regressão) com dados meteorológicos para criar um
 cronograma de irrigação para os próximos 7 dias. Cada recomendação inclui
 justificativa técnica explicando o motivo da decisão.
 """
@@ -29,7 +28,7 @@ class IrrigationRecommendations:
         
         Args:
             regression_model: Modelo de regressão treinado (para prever umidade)
-            classification_model: Modelo de classificação treinado (para prever irrigação)
+            classification_model: Não utilizado (mantido para compatibilidade)
             weather_api: Instância de WeatherAPI para obter previsões meteorológicas
         """
         self.regression_model = regression_model

@@ -3,9 +3,7 @@ Módulo de Modelos de Regressão - FASE 1
 
 Este módulo implementa e gerencia os modelos de regressão para prever a umidade
 do solo. Inclui 5 algoritmos diferentes (Linear, Ridge, Lasso, Random Forest e
-Gradient Boosting), cada um treinado com e sem PCA (Análise de Componentes
-Principais). O PCA reduz a dimensionalidade dos dados, potencialmente melhorando
-o desempenho e reduzindo overfitting. O módulo compara todos os modelos e seleciona
+Gradient Boosting). O módulo compara todos os modelos e seleciona
 automaticamente o melhor baseado na métrica R² no conjunto de teste.
 """
 import numpy as np
@@ -13,7 +11,6 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.base import clone
@@ -26,7 +23,7 @@ class Phase1Regression:
     Classe para treinar, avaliar e gerenciar modelos de regressão.
     
     Esta classe encapsula toda a lógica de treinamento de múltiplos modelos,
-    aplicação de PCA, avaliação de métricas e seleção do melhor modelo. Mantém
+    avaliação de métricas e seleção do melhor modelo. Mantém
     os modelos treinados em memória para uso em previsões e permite salvar/carregar
     modelos para evitar retreinamento.
     """
@@ -37,22 +34,18 @@ class Phase1Regression:
         
         Atributos:
         - model_definitions: Dicionário com definições dos modelos (não treinados)
-        - trained_models: Dicionário com modelos treinados sem PCA
-        - trained_models_pca: Dicionário com modelos treinados com PCA
+        - trained_models: Dicionário com modelos treinados
         - results: Dicionário com métricas de todos os modelos
         - best_model: Melhor modelo selecionado automaticamente
         - best_model_name: Nome do melhor modelo
-        - pca: Objeto PCA treinado (None se não foi usado)
         - scaler: Normalizador StandardScaler treinado
         - feature_names: Lista com nomes das features (para interpretação)
         """
         self.model_definitions = {}
         self.trained_models = {}
-        self.trained_models_pca = {}
         self.results = {}
         self.best_model = None
         self.best_model_name = None
-        self.pca = None
         self.scaler = StandardScaler()
         self.feature_names = None
         
@@ -81,23 +74,20 @@ class Phase1Regression:
             ),
         }
     
-    def train_models(self, X, y, use_pca=False, n_components=None):
+    def train_models(self, X, y):
         """
         Treina todos os modelos de regressão com os dados fornecidos.
         
         O processo de treinamento segue estas etapas:
         1. Divide os dados em treino e teste (80/20)
         2. Normaliza as features usando StandardScaler
-        3. Opcionalmente aplica PCA para redução de dimensionalidade
-        4. Treina cada modelo no conjunto de treino
-        5. Avalia cada modelo no conjunto de teste
-        6. Armazena métricas e modelos treinados
+        3. Treina cada modelo no conjunto de treino
+        4. Avalia cada modelo no conjunto de teste
+        5. Armazena métricas e modelos treinados
         
         Args:
             X: DataFrame ou array com features
             y: Series ou array com variável alvo
-            use_pca: Se True, aplica PCA antes de treinar os modelos
-            n_components: Número de componentes principais (None = automático)
         
         Returns:
             Dicionário com métricas de todos os modelos treinados
@@ -119,58 +109,21 @@ class Phase1Regression:
         X_train_scaled = self.scaler.fit_transform(X_train)
         X_test_scaled = self.scaler.transform(X_test)
         
-        # Aplicação opcional de PCA (Análise de Componentes Principais)
-        # PCA reduz a dimensionalidade mantendo a maior parte da variância dos dados
-        # Pode melhorar desempenho e reduzir overfitting, especialmente com muitas features
-        if use_pca:
-            # Calcula o número máximo de componentes possível
-            # O PCA não pode ter mais componentes do que features ou amostras disponíveis
-            max_components = min(X_train_scaled.shape[0], X_train_scaled.shape[1])
-            
-            if n_components is None:
-                # Se não especificado, usa no máximo 10 componentes ou o número de features disponíveis
-                n_components = min(10, max_components)
-            else:
-                # Se especificado, garante que não exceda o máximo possível
-                n_components = min(n_components, max_components)
-            
-            # Garante que n_components seja pelo menos 1
-            if n_components < 1:
-                n_components = max_components if max_components > 0 else 1
-            
-            # Cria e treina o PCA
-            self.pca = PCA(n_components=n_components, random_state=config.RANDOM_STATE)
-            X_train_pca = self.pca.fit_transform(X_train_scaled)
-            X_test_pca = self.pca.transform(X_test_scaled)
-            
-            X_train_final = X_train_pca
-            X_test_final = X_test_pca
-        else:
-            # Sem PCA, usa os dados normalizados diretamente
-            X_train_final = X_train_scaled
-            X_test_final = X_test_scaled
-        
-        # Seleciona o dicionário apropriado para armazenar modelos treinados
-        model_dict = self.trained_models_pca if use_pca else self.trained_models
-        
         # Treina cada modelo definido
         for name, model in self.model_definitions.items():
-            # Cria chave única para o modelo (com ou sem sufixo PCA)
-            model_key = f"{name} (PCA)" if use_pca else name
-            
             # Clona o modelo para evitar modificar a definição original
             # Isso permite treinar o mesmo tipo de modelo múltiplas vezes
             model_clone = clone(model)
             
             # Treina o modelo no conjunto de treino
             # O modelo aprende a relação entre features (X) e variável alvo (y)
-            model_clone.fit(X_train_final, y_train)
+            model_clone.fit(X_train_scaled, y_train)
             
             # Faz previsões nos conjuntos de treino e teste
             # Previsões no treino mostram se o modelo está aprendendo
             # Previsões no teste mostram a capacidade de generalização
-            y_pred_train = model_clone.predict(X_train_final)
-            y_pred_test = model_clone.predict(X_test_final)
+            y_pred_train = model_clone.predict(X_train_scaled)
+            y_pred_test = model_clone.predict(X_test_scaled)
             
             # Calcula métricas de avaliação
             # MAE: Erro médio absoluto (quanto menor, melhor)
@@ -190,7 +143,7 @@ class Phase1Regression:
             
             # Armazena o modelo treinado e suas métricas
             # Também guarda y_test e y_pred para análise posterior (gráficos, etc)
-            model_dict[model_key] = {
+            self.trained_models[name] = {
                 "model": model_clone,
                 "metrics": metrics,
                 "y_test": y_test,
@@ -198,7 +151,7 @@ class Phase1Regression:
             }
             
             # Armazena métricas no dicionário de resultados para comparação
-            self.results[model_key] = metrics
+            self.results[name] = metrics
         
         return self.results
     
@@ -231,11 +184,8 @@ class Phase1Regression:
         # Armazena o melhor modelo e seu nome
         self.best_model_name = best_name
         
-        # Recupera o modelo treinado do dicionário apropriado
-        if "PCA" in best_name:
-            self.best_model = self.trained_models_pca[best_name]["model"]
-        else:
-            self.best_model = self.trained_models[best_name]["model"]
+        # Recupera o modelo treinado
+        self.best_model = self.trained_models[best_name]["model"]
         
         return best_name, self.best_model
     
@@ -251,10 +201,9 @@ class Phase1Regression:
         
         Returns:
             DataFrame com features ordenadas por importância (do maior para menor)
-            ou None se o Random Forest não foi treinado ou se PCA foi usado
+            ou None se o Random Forest não foi treinado
         """
-        # Tenta obter o modelo Random Forest treinado sem PCA
-        # PCA transforma as features, então não temos importância das features originais
+        # Tenta obter o modelo Random Forest treinado
         rf_key = "Random Forest"
         rf_model = None
         
@@ -286,37 +235,16 @@ class Phase1Regression:
         
         return None
     
-    def get_pca_info(self):
-        """
-        Retorna informações sobre o PCA aplicado aos dados.
-        
-        Útil para análise e visualização: scree plot (variância explicada por componente),
-        loadings (correlação entre features originais e componentes) e número de componentes.
-        
-        Returns:
-            Dicionário com informações do PCA ou None se PCA não foi aplicado
-        """
-        if self.pca is None:
-            return None
-        
-        return {
-            "explained_variance_ratio": self.pca.explained_variance_ratio_,
-            "components": self.pca.components_,
-            "n_components": self.pca.n_components_,
-            "feature_names": self.feature_names,
-        }
-    
-    def predict(self, X, use_pca=False):
+    def predict(self, X):
         """
         Faz previsão de umidade do solo usando o melhor modelo treinado.
         
         O método aplica as mesmas transformações usadas no treinamento:
-        normalização e opcionalmente PCA. Isso garante que os dados de entrada
+        normalização. Isso garante que os dados de entrada
         estejam no mesmo formato que os dados de treino.
         
         Args:
             X: DataFrame ou array com features para previsão
-            use_pca: Se True, aplica PCA antes da previsão (deve corresponder ao melhor modelo)
         
         Returns:
             Array com previsões de umidade do solo ou None se nenhum modelo foi treinado
@@ -332,22 +260,16 @@ class Phase1Regression:
         # IMPORTANTE: usa transform, não fit_transform, pois o scaler já foi treinado
         X_scaled = self.scaler.transform(X)
         
-        # Aplica PCA se necessário
-        if use_pca and self.pca is not None:
-            X_final = self.pca.transform(X_scaled)
-        else:
-            X_final = X_scaled
-        
         # Faz a previsão usando o melhor modelo
-        return self.best_model.predict(X_final)
+        return self.best_model.predict(X_scaled)
     
     def save_models(self, directory=None):
         """
         Salva os modelos treinados em arquivos para uso posterior.
         
         Salvar modelos evita ter que retreinar toda vez que o sistema é reiniciado.
-        Salva o melhor modelo, o scaler (necessário para normalização) e o PCA
-        (se foi usado). Também salva todos os modelos individuais para análise.
+        Salva o melhor modelo e o scaler (necessário para normalização).
+        Também salva todos os modelos individuais para análise.
         
         Args:
             directory: Diretório onde salvar os modelos (None = usa config.MODELS_DIR)
@@ -361,24 +283,13 @@ class Phase1Regression:
         if self.best_model is not None:
             joblib.dump(self.best_model, os.path.join(directory, "best_regression_model.pkl"))
             joblib.dump(self.scaler, os.path.join(directory, "scaler.pkl"))
-            
-            if self.pca is not None:
-                joblib.dump(self.pca, os.path.join(directory, "pca.pkl"))
         
-        # Salva todos os modelos treinados (sem PCA)
+        # Salva todos os modelos treinados
         for name, model_data in self.trained_models.items():
             if "model" in model_data:
                 joblib.dump(
                     model_data["model"],
                     os.path.join(directory, f"regression_{name.lower().replace(' ', '_')}.pkl")
-                )
-        
-        # Salva todos os modelos treinados (com PCA)
-        for name, model_data in self.trained_models_pca.items():
-            if "model" in model_data:
-                joblib.dump(
-                    model_data["model"],
-                    os.path.join(directory, f"regression_{name.lower().replace(' ', '_')}_pca.pkl")
                 )
     
     def load_models(self, directory=None):
@@ -400,10 +311,6 @@ class Phase1Regression:
         try:
             self.best_model = joblib.load(os.path.join(directory, "best_regression_model.pkl"))
             self.scaler = joblib.load(os.path.join(directory, "scaler.pkl"))
-            
-            pca_path = os.path.join(directory, "pca.pkl")
-            if os.path.exists(pca_path):
-                self.pca = joblib.load(pca_path)
             
             return True
         except Exception as e:

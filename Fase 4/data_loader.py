@@ -4,7 +4,7 @@ Módulo de Carregamento e Pré-processamento de Dados
 Este módulo é responsável por carregar o dataset CSV e prepará-lo para os modelos
 de machine learning. Realiza transformações como one-hot encoding de variáveis
 categóricas, normalização de datas e remoção de valores ausentes. O pré-processamento
-é específico para cada tipo de modelo (regressão ou classificação) devido às
+é específico para modelos de regressão devido às
 diferenças nas variáveis alvo e features necessárias.
 """
 import pandas as pd
@@ -160,99 +160,6 @@ class DataLoader:
         
         # Remove registros com valores ausentes (NaN)
         # Cria máscara booleana: True para linhas sem NaN, False para linhas com NaN
-        mask = ~(X.isna().any(axis=1) | y.isna())
-        X = X[mask]
-        y = y[mask]
-        
-        return X, y, feature_cols
-    
-    def preprocess_for_classification(self):
-        """
-        Pré-processa dados para modelos de classificação (FASE 2).
-        
-        Similar ao método de regressão, mas mantém a coluna Relay_On como variável
-        alvo ao invés de removê-la. O pré-processamento é quase idêntico, mas as
-        colunas removidas são diferentes pois Relay_On é necessário para classificação.
-        
-        Returns:
-            Tupla (X, y, feature_cols):
-            - X: DataFrame com features
-            - y: Series com a variável alvo (Relay_On: 0 ou 1)
-            - feature_cols: Lista com nomes das colunas de features
-        
-        Raises:
-            ValueError: Se os dados não foram carregados ou se a coluna alvo não existe.
-        """
-        if self.df is None:
-            raise ValueError("Dados não carregados. Execute load_data() primeiro.")
-        
-        df = self.df.copy()
-        
-        # Remove colunas de data, hora e outras não utilizadas ANTES do one-hot encoding
-        # Isso evita conflitos de tipo de dados (datetime não pode ser misturado com numéricos)
-        # Mantém Relay_On pois é a variável alvo da classificação
-        cols_to_remove_early = ["ID", "Data", "Hora", "Status de Irrigação"]
-        cols_to_remove_early = [c for c in cols_to_remove_early if c in df.columns]
-        df = df.drop(columns=cols_to_remove_early, errors="ignore")
-        
-        # One-hot encoding para Cultura
-        # IMPORTANTE: Fazer isso ANTES de converter outras colunas para evitar conflitos de tipo
-        if "Cultura" in df.columns:
-            df = pd.get_dummies(df, columns=["Cultura"], prefix="Cultura")
-        
-        # One-hot encoding para Estágio Fenológico
-        if "Estágio Fenológico" in df.columns:
-            df = pd.get_dummies(df, columns=["Estágio Fenológico"], prefix="Estagio")
-        
-        # Separa features e variável alvo
-        target = config.CLASSIFICATION_TARGET
-        if target not in df.columns:
-            raise ValueError(f"Coluna alvo '{target}' não encontrada")
-        
-        feature_cols = [c for c in df.columns if c != target]
-        X = df[feature_cols].copy()
-        y = df[target].copy()
-        
-        # Remove qualquer coluna que ainda seja do tipo datetime ou object (strings de data)
-        # Isso garante que apenas colunas numéricas e one-hot encoded sejam mantidas
-        cols_to_drop = []
-        for col in X.columns:
-            # Verifica se é datetime
-            if pd.api.types.is_datetime64_any_dtype(X[col]):
-                cols_to_drop.append(col)
-            # Verifica se é object (string) e parece ser data
-            elif X[col].dtype == 'object':
-                # Tenta converter para datetime - se conseguir, é uma data
-                try:
-                    pd.to_datetime(X[col].iloc[0], errors='raise')
-                    cols_to_drop.append(col)
-                except:
-                    pass  # Não é data, mantém a coluna
-        
-        if cols_to_drop:
-            X = X.drop(columns=cols_to_drop, errors="ignore")
-            feature_cols = [c for c in feature_cols if c not in cols_to_drop]
-        
-        # Converte todas as colunas restantes para numérico (garante que one-hot encoding seja numérico)
-        # Isso é crítico porque o StandardScaler precisa de dados numéricos
-        for col in X.columns:
-            if X[col].dtype == 'object':
-                # Se ainda for object, tenta converter para numérico
-                X[col] = pd.to_numeric(X[col], errors='coerce')
-            elif pd.api.types.is_datetime64_any_dtype(X[col]):
-                # Se for datetime, remove (não deve chegar aqui, mas por segurança)
-                X = X.drop(columns=[col], errors="ignore")
-                feature_cols = [c for c in feature_cols if c != col]
-        
-        # Verificação final: garante que todas as colunas são numéricas
-        # Remove qualquer coluna que não seja numérica
-        numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
-        if len(numeric_cols) < len(X.columns):
-            non_numeric = [c for c in X.columns if c not in numeric_cols]
-            X = X[numeric_cols]
-            feature_cols = [c for c in feature_cols if c in numeric_cols]
-        
-        # Remove valores ausentes
         mask = ~(X.isna().any(axis=1) | y.isna())
         X = X[mask]
         y = y[mask]

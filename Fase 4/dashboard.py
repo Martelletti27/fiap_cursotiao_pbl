@@ -23,7 +23,6 @@ warnings.filterwarnings('ignore')
 import config
 from data_loader import DataLoader
 from phase1_regression import Phase1Regression
-from phase2_classification import Phase2Classification
 from weather_api import WeatherAPI
 from recommendations import IrrigationRecommendations
 
@@ -77,9 +76,11 @@ if 'data_loaded' not in st.session_state:
     st.session_state.data_loaded = False
     st.session_state.df = None
     st.session_state.regression = None
-    st.session_state.classification = None
     st.session_state.weather_api = None
     st.session_state.recommendations = None
+    st.session_state.current_municipio = None
+    st.session_state.weather_data = None
+    st.session_state.api_status = None
 
 # ============================================================================
 # TÍTULO PRINCIPAL DO DASHBOARD
@@ -97,11 +98,8 @@ st.sidebar.header("Configurações")
 
 # Lista de municípios disponíveis para seleção
 # O município selecionado é usado para consultar previsões meteorológicas
-municipios = [
-    "São Paulo", "Campinas", "Ribeirão Preto", 
-    "Piracicaba", "Londrina", "Cascavel", "Maringá"
-]
-municipio_selecionado = st.sidebar.selectbox("Município", municipios)
+municipios = config.MUNICIPIOS_CADASTRADOS
+municipio_selecionado = st.sidebar.selectbox("Município", municipios, key="municipio_select")
 
 # Lista de culturas disponíveis
 # A cultura selecionada filtra os dados e influencia as recomendações
@@ -125,8 +123,8 @@ uploaded_file = st.sidebar.file_uploader(
 # Quando o botão é clicado, o sistema:
 # 1. Carrega os dados (do upload ou arquivo padrão)
 # 2. Filtra por cultura selecionada
-# 3. Pré-processa os dados para regressão e classificação
-# 4. Treina todos os modelos (regressão com/sem PCA, classificação)
+# 3. Pré-processa os dados para regressão
+# 4. Treina todos os modelos de regressão
 # 5. Inicializa API meteorológica e sistema de recomendações
 # 6. Armazena tudo no session_state para uso nas abas
 
@@ -183,42 +181,12 @@ if st.sidebar.button("Carregar Dados", type="primary", use_container_width=True)
                 regression = Phase1Regression()
                 regression.initialize_models()
                 
-                # Treina modelos sem PCA (usa todas as features originais)
-                regression.train_models(X_reg, y_reg, use_pca=False)
-                
-                # Treina modelos com PCA (reduz dimensionalidade)
-                # Isso cria versões alternativas de cada modelo para comparação
-                # n_components=None faz o código calcular automaticamente o número máximo possível
-                regression.train_models(X_reg, y_reg, use_pca=True, n_components=None)
+                # Treina modelos de regressão
+                regression.train_models(X_reg, y_reg)
                 
                 # Seleciona o melhor modelo baseado em R²
                 regression.get_best_model()
                 st.session_state.regression = regression
-                
-                # Pré-processa dados para modelos de classificação
-                # Similar à regressão, mas mantém Relay_On como variável alvo
-                X_clf, y_clf, features_clf = loader.preprocess_for_classification()
-                
-                # Verifica se há pelo menos 2 classes antes de treinar modelos de classificação
-                # Isso evita erros quando os dados filtrados têm apenas uma classe
-                unique_classes = y_clf.nunique() if hasattr(y_clf, 'nunique') else len(pd.Series(y_clf).unique())
-                if unique_classes < 2:
-                    st.sidebar.warning(
-                        f"⚠️ Os dados filtrados para '{cultura_selecionada}' contêm apenas uma classe "
-                        f"(Relay_On = {y_clf.iloc[0] if len(y_clf) > 0 else 'N/A'}). "
-                        f"Modelos de classificação não podem ser treinados. "
-                        f"Tente selecionar outra cultura ou usar dados sem filtro."
-                    )
-                    # Cria instância vazia para evitar erros nas abas
-                    classification = Phase2Classification()
-                    st.session_state.classification = classification
-                else:
-                    # Inicializa e treina modelos de classificação
-                    classification = Phase2Classification()
-                    classification.initialize_models()
-                    classification.train_models(X_clf, y_clf)
-                    classification.get_best_model()
-                    st.session_state.classification = classification
                 
                 # Inicializa API meteorológica
                 # Pode usar API real (se configurada) ou dados simulados
@@ -228,7 +196,7 @@ if st.sidebar.button("Carregar Dados", type="primary", use_container_width=True)
                 # Inicializa sistema de recomendações
                 # Combina modelos de ML com dados meteorológicos
                 recommendations = IrrigationRecommendations(
-                    regression, classification, weather_api
+                    regression, None, weather_api
                 )
                 st.session_state.recommendations = recommendations
                 
@@ -269,7 +237,6 @@ if st.session_state.data_loaded:
     # Isso evita recarregar a cada interação
     df = st.session_state.df
     regression = st.session_state.regression
-    classification = st.session_state.classification
     
     # ============================================================================
     # ABA 1: RESUMO GERAL
@@ -314,10 +281,10 @@ if st.session_state.data_loaded:
             df["DataHora"] = pd.to_datetime(df["Data"].astype(str) + " " + df["Hora"].astype(str))
             df_sorted = df.sort_values("DataHora").copy()
             
-            # Agrupa por dia (média diária) para os últimos 30 dias
-            # Filtra últimos 30 dias
+            # Agrupa por dia (média diária) para os últimos 120 dias
+            # Filtra últimos 120 dias
             if len(df_sorted) > 0:
-                data_limite = df_sorted["Data"].max() - pd.Timedelta(days=30)
+                data_limite = df_sorted["Data"].max() - pd.Timedelta(days=120)
                 df_30_dias = df_sorted[df_sorted["Data"] >= data_limite].copy()
             else:
                 df_30_dias = df_sorted.copy()
@@ -330,7 +297,7 @@ if st.session_state.data_loaded:
             }).reset_index()
             df_diario = df_diario.sort_values("Data")  # Garante ordem cronológica
             
-            # Gráfico de temperatura ao longo do tempo (últimos 30 dias, média diária)
+            # Gráfico de temperatura ao longo do tempo
             fig_temp = go.Figure()
             fig_temp.add_trace(go.Scatter(
                 x=df_diario["Data"],
@@ -464,9 +431,9 @@ if st.session_state.data_loaded:
                 df["Data"] = pd.to_datetime(df["Data"])
                 df_sorted = df.sort_values("Data")  # Garante ordem cronológica
                 
-                # Agrupa por dia (média diária) para últimos 30 dias
+                # Agrupa por dia (média diária) para últimos 120 dias
                 if len(df_sorted) > 0:
-                    data_limite = df_sorted["Data"].max() - pd.Timedelta(days=30)
+                    data_limite = df_sorted["Data"].max() - pd.Timedelta(days=120)
                     df_30_dias = df_sorted[df_sorted["Data"] >= data_limite].copy()
                 else:
                     df_30_dias = df_sorted.copy()
@@ -719,53 +686,69 @@ if st.session_state.data_loaded:
         
         # Mapa do município (usando coordenadas)
         # Obtém previsão do tempo para exibir % de chuva no mapa
+        # Carrega automaticamente quando muda o município
         if st.session_state.weather_api:
+            # Verifica se o município mudou ou se ainda não há dados carregados
+            municipio_mudou = st.session_state.current_municipio != municipio_selecionado
+            
+            if municipio_mudou or st.session_state.weather_data is None:
+                # Carrega dados da API para o município selecionado
+                with st.spinner(f"Carregando dados meteorológicos para {municipio_selecionado}..."):
+                    weather_df = st.session_state.weather_api.get_weather_forecast(municipio_selecionado, days=7)
+                    st.session_state.weather_data = weather_df
+                    st.session_state.current_municipio = municipio_selecionado
+            else:
+                # Usa dados já carregados
+                weather_df = st.session_state.weather_data
+            
             coords = st.session_state.weather_api.get_city_coordinates(municipio_selecionado)
             if coords:
-                # Obtém previsão do tempo para os próximos 7 dias
-                weather_df = st.session_state.weather_api.get_weather_forecast(municipio_selecionado, days=7)
                 
-                # Título discreto e pequeno
-                st.markdown(f"<p style='font-size: 0.75em; color: #888; margin-bottom: 0.3rem; margin-top: 0;'>Localização: {municipio_selecionado}</p>", unsafe_allow_html=True)
-                
-                # Mapa do município
-                map_data = pd.DataFrame({
-                    "lat": [coords[0]],
-                    "lon": [coords[1]]
-                })
-                st.map(map_data, zoom=10)
-                
-                # Informações de chuva para os próximos 7 dias (abaixo do mapa)
-                if weather_df is not None and len(weather_df) > 0:
-                    st.markdown("**Previsão de Chuva (Próximos 7 dias):**")
+                # Verifica se a API está disponível
+                if weather_df is None:
+                    st.error("⚠️ API de previsão do tempo fora do ar. Não é possível gerar recomendações no momento.")
+                else:
+                    # Título discreto e pequeno
+                    st.markdown(f"<p style='font-size: 0.75em; color: #888; margin-bottom: 0.3rem; margin-top: 0;'>Localização: {municipio_selecionado}</p>", unsafe_allow_html=True)
                     
-                    # Cria grid de 7 colunas para os dias
-                    cols_chuva = st.columns(7)
-                    for idx, (col, (_, row)) in enumerate(zip(cols_chuva, weather_df.iterrows())):
-                        with col:
-                            prob_chuva = row.get("probabilidade_chuva", 0)
-                            # Ícone baseado na probabilidade
-                            if prob_chuva > 70:
-                                icon = "🌧️"
-                            elif prob_chuva > 50:
-                                icon = "🌦️"
-                            elif prob_chuva > 30:
-                                icon = "⛅"
-                            else:
-                                icon = "☀️"
-                            
-                            # Formata data
-                            try:
-                                data_formatada = pd.to_datetime(row["data"]).strftime("%d/%m")
-                            except:
-                                data_formatada = row["data"]
-                            
-                            # Exibe de forma compacta com fundo
-                            st.markdown(f"<div style='text-align: center; padding: 0.4rem; background-color: #f8f9fa; border-radius: 0.4rem; margin-bottom: 0.3rem;'>", unsafe_allow_html=True)
-                            st.markdown(f"<div style='font-size: 1.8em; line-height: 1;'>{icon}</div>", unsafe_allow_html=True)
-                            st.markdown(f"<div style='font-size: 0.75em; font-weight: bold; margin-top: 0.2rem;'>{data_formatada}</div>", unsafe_allow_html=True)
-                            st.markdown(f"<div style='font-size: 0.85em; color: #2c3e50;'>{prob_chuva:.0f}%</div>", unsafe_allow_html=True)
-                            st.markdown("</div>", unsafe_allow_html=True)
+                    # Mapa do município
+                    map_data = pd.DataFrame({
+                        "lat": [coords[0]],
+                        "lon": [coords[1]]
+                    })
+                    st.map(map_data, zoom=10)
+                    
+                    # Informações de chuva para os próximos 7 dias (abaixo do mapa)
+                    if len(weather_df) > 0:
+                        st.markdown("**Previsão de Chuva (Próximos 7 dias):**")
+                        
+                        # Cria grid de 7 colunas para os dias
+                        cols_chuva = st.columns(7)
+                        for idx, (col, (_, row)) in enumerate(zip(cols_chuva, weather_df.iterrows())):
+                            with col:
+                                prob_chuva = row.get("probabilidade_chuva", 0)
+                                # Ícone baseado na probabilidade
+                                if prob_chuva > 70:
+                                    icon = "🌧️"
+                                elif prob_chuva > 50:
+                                    icon = "🌦️"
+                                elif prob_chuva > 30:
+                                    icon = "⛅"
+                                else:
+                                    icon = "☀️"
+                                
+                                # Formata data
+                                try:
+                                    data_formatada = pd.to_datetime(row["data"]).strftime("%d/%m")
+                                except:
+                                    data_formatada = row["data"]
+                                
+                                # Exibe de forma compacta com fundo
+                                st.markdown(f"<div style='text-align: center; padding: 0.4rem; background-color: #f8f9fa; border-radius: 0.4rem; margin-bottom: 0.3rem;'>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='font-size: 1.8em; line-height: 1;'>{icon}</div>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='font-size: 0.75em; font-weight: bold; margin-top: 0.2rem;'>{data_formatada}</div>", unsafe_allow_html=True)
+                                st.markdown(f"<div style='font-size: 0.85em; color: #2c3e50;'>{prob_chuva:.0f}%</div>", unsafe_allow_html=True)
+                                st.markdown("</div>", unsafe_allow_html=True)
         
         st.markdown("---")
         
@@ -778,7 +761,9 @@ if st.session_state.data_loaded:
                         municipio_selecionado, cultura_selecionada, days=7
                     )
                     
-                    if rec_df is not None and len(rec_df) > 0:
+                    if rec_df is None:
+                        st.error("⚠️ API de previsão do tempo fora do ar. Não é possível gerar recomendações no momento.")
+                    elif len(rec_df) > 0:
                         st.markdown("---")
                         st.subheader("Cronograma (7 dias)")
                         
@@ -899,7 +884,7 @@ if st.session_state.data_loaded:
     # ABA 5: ANÁLISE TÉCNICA DE MACHINE LEARNING
     # ============================================================================
     # Esta aba mostra análise detalhada dos modelos treinados
-    # Inclui comparação de métricas, gráficos de desempenho e análise PCA
+    # Inclui comparação de métricas e gráficos de desempenho
     
     with tab5:
         # Título removido - a aba já identifica o conteúdo
@@ -935,8 +920,8 @@ if st.session_state.data_loaded:
             
             # Gráfico de dispersão: valores reais vs valores previstos
             # Pontos próximos à linha diagonal indicam boas previsões
-            if best_name in regression.trained_models or best_name in regression.trained_models_pca:
-                model_data = regression.trained_models.get(best_name) or regression.trained_models_pca.get(best_name)
+            if best_name in regression.trained_models:
+                model_data = regression.trained_models.get(best_name)
                 if model_data and "y_test" in model_data and "y_pred" in model_data:
                     fig_scatter = px.scatter(
                         x=model_data["y_test"],
@@ -953,143 +938,6 @@ if st.session_state.data_loaded:
                         line=dict(dash='dash', color='red')
                     ))
                     st.plotly_chart(fig_scatter, use_container_width=True)
-            
-            # Análise PCA (se foi aplicado)
-            st.markdown("---")
-            st.subheader("Análise de Componentes Principais (PCA)")
-            
-            pca_info = regression.get_pca_info()
-            if pca_info:
-                # Scree plot: mostra variância explicada por cada componente (linha suavizada)
-                explained_var = pca_info["explained_variance_ratio"]
-                fig_scree = go.Figure()
-                fig_scree.add_trace(go.Scatter(
-                    x=list(range(1, len(explained_var) + 1)),
-                    y=explained_var * 100,
-                    mode='lines+markers',
-                    name="Variância Explicada",
-                    line=dict(shape='spline', smoothing=1.0, width=2, color='blue')
-                ))
-                fig_scree.update_layout(
-                    title=None,
-                    xaxis_title="Componente Principal",
-                    yaxis_title="Variância Explicada (%)"
-                )
-                st.plotly_chart(fig_scree, use_container_width=True)
-                
-                # Loadings plot: mostra correlação entre features originais e componentes
-                # Filtra apenas features relacionadas à cultura selecionada
-                if len(pca_info["components"]) >= 2:
-                    feature_names = pca_info["feature_names"]
-                    if feature_names:
-                        # Filtra features relacionadas à cultura selecionada
-                        # Mantém apenas features da cultura selecionada e features numéricas gerais
-                        cultura_prefix = f"Cultura_{cultura_selecionada}"
-                        features_filtradas = []
-                        indices_filtrados = []
-                        
-                        for i, feat in enumerate(feature_names):
-                            # Inclui se:
-                            # 1. É da cultura selecionada (Cultura_SOJA, Cultura_MILHO, etc)
-                            # 2. Não é feature de cultura (features numéricas gerais)
-                            # 3. Não é feature de estágio (para simplificar)
-                            if (feat == cultura_prefix or 
-                                (not feat.startswith("Cultura_") and not feat.startswith("Estagio_"))):
-                                features_filtradas.append(feat)
-                                indices_filtrados.append(i)
-                        
-                        # Se não encontrou features, usa todas (fallback)
-                        if not indices_filtrados:
-                            indices_filtrados = list(range(min(len(feature_names), len(pca_info["components"][0]))))
-                            features_filtradas = feature_names[:len(indices_filtrados)]
-                        
-                        # Filtra loadings baseado nos índices
-                        if len(indices_filtrados) > 0:
-                            try:
-                                # Extrai apenas os componentes das features filtradas
-                                loadings_filtrados = pca_info["components"][:2][:, indices_filtrados].T
-                                
-                                loadings_df = pd.DataFrame(
-                                    loadings_filtrados,
-                                    columns=["PC1", "PC2"],
-                                    index=features_filtradas[:len(loadings_filtrados)]
-                                )
-                            except:
-                                # Fallback: usa todas as features
-                                loadings_df = pd.DataFrame(
-                                    pca_info["components"][:2].T,
-                                    columns=["PC1", "PC2"],
-                                    index=feature_names[:len(pca_info["components"][0])]
-                                )
-                        else:
-                            # Fallback: usa todas as features
-                            loadings_df = pd.DataFrame(
-                                pca_info["components"][:2].T,
-                                columns=["PC1", "PC2"],
-                                index=feature_names[:len(pca_info["components"][0])]
-                            )
-                    else:
-                        loadings_df = pd.DataFrame(
-                            pca_info["components"][:2].T,
-                            columns=["PC1", "PC2"]
-                        )
-                    
-                    fig_loadings = px.scatter(
-                        loadings_df,
-                        x="PC1",
-                        y="PC2",
-                        text=loadings_df.index if loadings_df.index is not None else None,
-                        title=None,
-                        labels={"PC1": "PC1", "PC2": "PC2"}
-                    )
-                    fig_loadings.update_traces(textposition="top center")
-                    st.plotly_chart(fig_loadings, use_container_width=True)
-        
-        # Seção de modelos de classificação
-        st.markdown("---")
-        st.subheader("Modelos de Classificação")
-        
-        if classification and classification.results:
-            # Tabela comparativa com métricas de classificação
-            clf_results_df = pd.DataFrame(classification.results).T
-            clf_results_df = clf_results_df[["Accuracy_test", "Precision_test", "Recall_test", "F1_test"]]
-            clf_results_df.columns = ["Acurácia", "Precisão", "Recall", "F1-Score"]
-            clf_results_df = clf_results_df.round(4)
-            
-            st.markdown("### Comparação de Modelos")
-            st.dataframe(clf_results_df, use_container_width=True)
-            
-            # Gráfico de barras comparando F1-Score
-            fig_f1 = px.bar(
-                x=clf_results_df.index,
-                y=clf_results_df["F1-Score"],
-                title="F1-Score por Modelo",
-                labels={"x": "Modelo", "y": "F1-Score"},
-                color=clf_results_df["F1-Score"],
-                color_continuous_scale="Blues"
-            )
-            fig_f1.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig_f1, use_container_width=True)
-            
-            # Identifica e exibe o melhor modelo
-            best_clf_name, _ = classification.get_best_model()
-            st.success(f"Melhor Modelo: **{best_clf_name}** (F1 = {clf_results_df.loc[best_clf_name, 'F1-Score']:.4f})")
-            
-            # Matriz de confusão do melhor modelo
-            # Mostra quantas previsões foram corretas/incorretas
-            if best_clf_name in classification.models:
-                model_data = classification.models[best_clf_name]
-                if "Confusion_Matrix" in model_data["metrics"]:
-                    cm = model_data["metrics"]["Confusion_Matrix"]
-                    fig_cm = px.imshow(
-                        cm,
-                        labels=dict(x="Previsto", y="Real", color="Quantidade"),
-                        x=["Não Irrigar", "Irrigar"],
-                        y=["Não Irrigar", "Irrigar"],
-                        title=f"Matriz de Confusão - {best_clf_name}",
-                        color_continuous_scale="Blues"
-                    )
-                    st.plotly_chart(fig_cm, use_container_width=True)
 
 else:
     # Mensagem exibida quando os dados ainda não foram carregados

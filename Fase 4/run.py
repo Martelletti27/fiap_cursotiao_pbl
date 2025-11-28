@@ -1,6 +1,4 @@
-"""
-Script principal para executar o dashboard
-"""
+
 import subprocess
 import sys
 import os

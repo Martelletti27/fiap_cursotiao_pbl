@@ -1,27 +1,24 @@
 """
 Módulo de Integração com APIs Meteorológicas
 
-Este módulo fornece interface para consultar dados de previsão do tempo de APIs
-externas (OpenWeatherMap, INMET) ou gerar dados simulados quando a API não está
-disponível. Os dados meteorológicos são essenciais para o sistema de recomendações
-de irrigação, pois chuva prevista e temperatura influenciam diretamente a decisão
-de quando irrigar. O módulo inclui fallback automático para dados simulados baseados
-em padrões sazonais quando a API real não está configurada ou falha.
+Este módulo fornece interface para consultar dados de previsão do tempo usando
+a API Open-Meteo (gratuita, sem necessidade de cadastro ou chave de API).
+Os dados meteorológicos são essenciais para o sistema de recomendações de irrigação,
+pois chuva prevista e temperatura influenciam diretamente a decisão de quando irrigar.
+Retorna None quando a API não está disponível.
 """
 import requests
 import pandas as pd
-import numpy as np
 from datetime import datetime, timedelta
 import config
 
 class WeatherAPI:
     """
-    Classe para consultar dados meteorológicos de APIs externas.
+    Classe para consultar dados meteorológicos usando Open-Meteo API.
     
-    Esta classe abstrai a complexidade de integração com diferentes APIs de clima,
-    fornecendo uma interface única para obter previsões do tempo. Inclui tratamento
-    de erros e fallback automático para dados simulados, garantindo que o sistema
-    sempre tenha dados meteorológicos disponíveis mesmo sem conexão com APIs externas.
+    Open-Meteo é uma API meteorológica gratuita e de código aberto que não requer
+    cadastro ou chave de API. Usa coordenadas geográficas para obter previsões
+    precisas para qualquer localização.
     """
     
     def __init__(self, api_key=None):
@@ -29,25 +26,23 @@ class WeatherAPI:
         Inicializa a classe de API meteorológica.
         
         Args:
-            api_key: Chave de API para OpenWeatherMap (None = usa config ou dados simulados)
+            api_key: Não utilizado (mantido para compatibilidade)
         """
-        self.api_key = api_key or config.WEATHER_API_KEY
-        self.base_url = config.WEATHER_API_URL
+        # Open-Meteo não requer chave de API
+        self.base_url = "https://api.open-meteo.com/v1/forecast"
         self.cache = {}
     
     def get_weather_forecast(self, city, country="BR", days=7):
         """
-        Obtém previsão do tempo para os próximos N dias.
+        Obtém previsão do tempo para os próximos N dias via API Open-Meteo.
         
-        Tenta primeiro usar a API real (OpenWeatherMap). Se não houver API key
-        configurada ou se houver erro na requisição, retorna dados simulados
-        baseados em padrões sazonais. Isso garante que o sistema funcione mesmo
-        sem configuração de API externa.
+        Consulta a API usando coordenadas geográficas do município. Não requer
+        cadastro ou chave de API. Retorna None se houver erro na requisição.
         
         Args:
             city: Nome da cidade para consulta
-            country: Código do país (padrão: "BR" para Brasil)
-            days: Número de dias de previsão (padrão: 7)
+            country: Código do país (não utilizado, mantido para compatibilidade)
+            days: Número de dias de previsão (padrão: 7, máximo: 16)
         
         Returns:
             DataFrame pandas com previsões diárias contendo:
@@ -57,158 +52,185 @@ class WeatherAPI:
             - probabilidade_chuva: Probabilidade de chuva (%)
             - chuva_mm: Volume de chuva previsto (mm)
             - descricao: Descrição textual do clima
+            None se a API não estiver disponível
         """
-        # Se não houver API key, retorna dados simulados imediatamente
-        if not self.api_key:
-            return self._get_simulated_weather(city, days)
+        # Obtém coordenadas da cidade
+        coords = self.get_city_coordinates(city)
+        if not coords:
+            return None
+        
+        lat, lon = coords
         
         try:
-            # Monta URL da API OpenWeatherMap
-            # Parâmetros: cidade, país, chave API, unidades métricas, idioma português
-            url = f"{self.base_url}?q={city},{country}&appid={self.api_key}&units=metric&lang=pt_br"
+            # Limita dias a 16 (limite da API gratuita)
+            days = min(days, 16)
+            
+            # Monta URL da API Open-Meteo
+            # Parâmetros: latitude, longitude, variáveis meteorológicas, dias de previsão
+            # Nota: relative_humidity_2m não está disponível em daily, usamos hourly e agregamos
+            url = (
+                f"{self.base_url}?"
+                f"latitude={lat}&longitude={lon}&"
+                f"daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&"
+                f"hourly=relative_humidity_2m&"
+                f"timezone=America/Sao_Paulo&"
+                f"forecast_days={days}"
+            )
+            
             response = requests.get(url, timeout=10)
             
             # Se a requisição foi bem-sucedida, processa os dados
             if response.status_code == 200:
                 data = response.json()
-                return self._parse_openweather_data(data, days)
+                return self._parse_openmeteo_data(data, days)
             else:
-                # Se houver erro na API, usa dados simulados como fallback
-                return self._get_simulated_weather(city, days)
+                # Se houver erro na API, retorna None
+                return None
         
         except Exception as e:
-            # Em caso de qualquer erro (timeout, conexão, etc), usa dados simulados
-            print(f"Erro ao consultar API: {e}. Usando dados simulados.")
-            return self._get_simulated_weather(city, days)
+            # Em caso de qualquer erro (timeout, conexão, etc), retorna None
+            print(f"Erro ao consultar API: {e}")
+            return None
     
-    def _parse_openweather_data(self, data, days):
+    def _parse_openmeteo_data(self, data, days):
         """
-        Processa e formata dados retornados pela API OpenWeatherMap.
+        Processa e formata dados retornados pela API Open-Meteo.
         
-        A API retorna previsões a cada 3 horas. Este método agrupa essas previsões
-        por dia, calculando médias para temperatura e umidade, máximo para
-        probabilidade de chuva e soma para volume de chuva.
+        A API retorna previsões diárias já agregadas. Este método formata os dados
+        para o formato esperado pelo sistema.
         
         Args:
             data: Dicionário JSON retornado pela API
             days: Número de dias desejados
         
         Returns:
-            DataFrame com previsões agrupadas por dia
+            DataFrame com previsões diárias
         """
+        daily = data.get("daily", {})
+        
+        if not daily or "time" not in daily:
+            return None
+        
+        # Verifica se há dados suficientes
+        if len(daily["time"]) == 0:
+            print("Debug: Lista de 'time' vazia")
+            return None
+        
         forecasts = []
         
-        # Itera sobre as previsões retornadas (limitado a days * 8, pois há 8 previsões por dia)
-        for item in data.get("list", [])[:days * 8]:
-            # Converte timestamp Unix para objeto datetime
-            dt = datetime.fromtimestamp(item["dt"])
+        # Itera sobre os dias retornados
+        num_days = min(len(daily["time"]), days)
+        for i in range(num_days):
+            # Calcula temperatura média (média entre máxima e mínima)
+            temp_max_list = daily.get("temperature_2m_max", [])
+            temp_min_list = daily.get("temperature_2m_min", [])
             
-            # Extrai informações relevantes de cada previsão
+            temp_max = temp_max_list[i] if i < len(temp_max_list) else 25
+            temp_min = temp_min_list[i] if i < len(temp_min_list) else 15
+            temperatura = (temp_max + temp_min) / 2
+            
+            # Extrai outros dados
+            chuva_list = daily.get("precipitation_sum", [])
+            prob_chuva_list = daily.get("precipitation_probability_max", [])
+            
+            # Calcula umidade média do dia usando dados horários
+            hourly = data.get("hourly", {})
+            umidade_hourly = hourly.get("relative_humidity_2m", [])
+            if umidade_hourly:
+                # Calcula média das 24 horas do dia (índices i*24 até (i+1)*24)
+                start_idx = i * 24
+                end_idx = min((i + 1) * 24, len(umidade_hourly))
+                if end_idx > start_idx:
+                    umidade = sum(umidade_hourly[start_idx:end_idx]) / (end_idx - start_idx)
+                else:
+                    umidade = 60
+            else:
+                umidade = 60
+            
+            chuva_mm = chuva_list[i] if i < len(chuva_list) else 0
+            prob_chuva = prob_chuva_list[i] if i < len(prob_chuva_list) else 0
+            
+            # Gera descrição baseada na probabilidade de chuva
+            if prob_chuva > 70:
+                descricao = "chuva intensa"
+            elif prob_chuva > 50:
+                descricao = "chuva moderada"
+            elif prob_chuva > 30:
+                descricao = "possibilidade de chuva"
+            else:
+                descricao = "ceu claro"
+            
             forecasts.append({
-                "data": dt.strftime("%Y-%m-%d"),
-                "hora": dt.strftime("%H:%M"),
-                "temperatura": item["main"]["temp"],
-                "umidade": item["main"]["humidity"],
-                "probabilidade_chuva": item.get("pop", 0) * 100,  # pop vem como decimal (0-1)
-                "chuva_mm": item.get("rain", {}).get("3h", 0) if "rain" in item else 0,
-                "descricao": item["weather"][0]["description"],
+                "data": daily["time"][i],
+                "temperatura": round(temperatura, 1),
+                "umidade": round(umidade, 1),
+                "probabilidade_chuva": round(prob_chuva, 1),
+                "chuva_mm": round(chuva_mm, 1),
+                "descricao": descricao,
             })
         
         # Converte lista de dicionários em DataFrame
+        if len(forecasts) == 0:
+            return None
+        
         df = pd.DataFrame(forecasts)
         
-        # Agrupa previsões por dia, agregando valores
-        # Média para temperatura e umidade, máximo para probabilidade, soma para chuva
-        df_daily = df.groupby("data").agg({
-            "temperatura": "mean",
-            "umidade": "mean",
-            "probabilidade_chuva": "max",
-            "chuva_mm": "sum",
-            "descricao": "first",
-        }).reset_index()
-        
-        # Retorna apenas o número de dias solicitado
-        return df_daily.head(days)
-    
-    def _get_simulated_weather(self, city, days):
-        """
-        Gera dados meteorológicos simulados baseados em padrões sazonais.
-        
-        Quando a API real não está disponível, este método gera previsões realistas
-        baseadas em padrões sazonais do Brasil. Temperatura e probabilidade de chuva
-        variam conforme a estação do ano (verão tem mais chuva e temperatura mais alta).
-        Inclui variação aleatória para simular condições reais.
-        
-        Args:
-            city: Nome da cidade (não usado na simulação, mas mantido para compatibilidade)
-            days: Número de dias de previsão
-        
-        Returns:
-            DataFrame com previsões simuladas no mesmo formato da API real
-        """
-        forecasts = []
-        base_date = datetime.now()
-        
-        # Gera previsão para cada dia solicitado
-        for i in range(days):
-            date = base_date + timedelta(days=i)
-            
-            # Calcula o dia do ano (1-365) para determinar a estação
-            day_of_year = date.timetuple().tm_yday
-            
-            # Define temperatura base conforme a estação
-            # Verão no Brasil (março-junho, aproximadamente dias 80-172): mais quente
-            # Inverno: mais frio
-            temp_base = 25 if 80 <= day_of_year <= 172 else 20
-            temperatura = temp_base + np.random.normal(0, 3)  # Adiciona variação aleatória
-            
-            # Probabilidade de chuva maior no verão
-            prob_chuva_base = 0.4 if 80 <= day_of_year <= 172 else 0.2
-            probabilidade_chuva = min(100, max(0, (prob_chuva_base + np.random.normal(0, 0.15)) * 100))
-            
-            # Chuva real baseada na probabilidade
-            # Se a probabilidade for alta, há maior chance de chover
-            chuva_mm = np.random.exponential(2) if np.random.random() < (probabilidade_chuva / 100) else 0
-            
-            # Umidade relativa varia aleatoriamente em torno de 60%
-            umidade = 60 + np.random.normal(0, 10)
-            umidade = max(30, min(90, umidade))  # Limita entre 30% e 90%
-            
-            # Adiciona previsão à lista
-            forecasts.append({
-                "data": date.strftime("%Y-%m-%d"),
-                "temperatura": round(temperatura, 1),
-                "umidade": round(umidade, 1),
-                "probabilidade_chuva": round(probabilidade_chuva, 1),
-                "chuva_mm": round(chuva_mm, 1),
-                "descricao": "céu parcialmente nublado" if probabilidade_chuva > 50 else "céu claro",
-            })
-        
-        return pd.DataFrame(forecasts)
+        return df
     
     def get_city_coordinates(self, city):
         """
         Retorna coordenadas geográficas (latitude, longitude) de uma cidade.
         
-        Útil para APIs que requerem coordenadas ao invés de nome da cidade.
-        Atualmente implementado com um dicionário fixo, mas pode ser expandido
-        para usar APIs de geocodificação.
+        Mapeia todos os municípios cadastrados no sistema com suas coordenadas
+        geográficas precisas para uso em mapas e APIs.
         
         Args:
             city: Nome da cidade
         
         Returns:
-            Tupla (latitude, longitude) ou coordenadas padrão de São Paulo
+            Tupla (latitude, longitude) ou None se cidade não encontrada
         """
-        # Dicionário com coordenadas de algumas cidades brasileiras
-        # Pode ser expandido ou integrado com API de geocodificação
+        # Dicionário completo com coordenadas de todos os municípios cadastrados
         cities_coords = {
             "São Paulo": (-23.5505, -46.6333),
             "Campinas": (-22.9056, -47.0608),
             "Ribeirão Preto": (-21.1775, -47.8103),
             "Piracicaba": (-22.7253, -47.6493),
             "Londrina": (-23.3045, -51.1696),
+            "Cascavel": (-24.9558, -53.4553),
+            "Maringá": (-23.4205, -51.9334),
         }
         
-        # Retorna coordenadas da cidade ou padrão (São Paulo)
-        return cities_coords.get(city, (-23.5505, -46.6333))
+        # Retorna coordenadas da cidade ou None se não encontrada
+        return cities_coords.get(city)
+    
+    def test_api_connection(self):
+        """
+        Testa a conexão com a API Open-Meteo.
+        
+        Faz uma requisição de teste para verificar se a API está funcionando.
+        Open-Meteo não requer chave de API, então sempre retorna True se
+        a requisição for bem-sucedida.
+        
+        Returns:
+            True se a API está funcionando, False caso contrário
+        """
+        try:
+            # Testa com coordenadas de São Paulo
+            url = (
+                f"{self.base_url}?"
+                f"latitude=-23.5505&longitude=-46.6333&"
+                f"daily=temperature_2m_max&"
+                f"timezone=America/Sao_Paulo&"
+                f"forecast_days=1"
+            )
+            response = requests.get(url, timeout=10)
+            
+            if response.status_code == 200:
+                return True
+            else:
+                print(f"Erro na API: Status {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"Erro ao testar conexão com API: {e}")
+            return False
