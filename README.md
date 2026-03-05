@@ -12,7 +12,7 @@
 - <a href="https://github.com/Emarinhos">Everton</a>
 - <a href="https://github.com/Juliagutierres29">Julia</a>
 - <a href="https://github.com/rm567718">Nayara</a> 
-- <a href="https://github.com/vuXavier">Xavier</a> 
+- <a href="https://github.com/Xaramandas">Felipe Lourenco</a> 
 - <a href="https://github.com/Martelletti27">Matheus</a>
 
 ## 👩‍🏫 Professores:
