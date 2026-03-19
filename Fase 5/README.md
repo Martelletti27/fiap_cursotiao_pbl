@@ -1,5 +1,11 @@
 # FarmTech Solutions - Fase 5
 
+## 🎬 Vídeo demonstrativo
+
+[![Assistir no YouTube](https://img.shields.io/badge/YouTube-Assistir-red?style=flat&logo=youtube)](https://youtu.be/d5_5WkzmbdU)
+
+---
+
 ## Estrutura
 
 ```
