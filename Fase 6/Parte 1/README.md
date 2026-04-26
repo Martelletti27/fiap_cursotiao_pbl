@@ -20,8 +20,7 @@ Após o download, ajuste o campo **`path:`** em `dataset.yaml` para o caminho lo
 
 Treinamento/validação com YOLOv8n. Abra no Jupyter ou VS Code a partir do clone do repositório, ou use o link do GitHub:
 
-- **Arquivo (mesma pasta):** [Matheus_rm566767_pbl_fase6_Yolo8n.ipynb](Matheus_rm566767_pbl_fase6_Yolo8n.ipynb)
-- **Abrir no GitHub (navegador, branch `main`):** [Matheus_rm566767_pbl_fase6_Yolo8n.ipynb](https://github.com/Martelletti27/fiap_cursotiao_pbl/blob/main/Fase%206/Parte%201/Matheus_rm566767_pbl_fase6_Yolo8n.ipynb)
+- **Arquivo:** [Matheus_rm566767_pbl_fase6_Yolo8n.ipynb](Matheus_rm566767_pbl_fase6_Yolo8n.ipynb)
 
 ## Estrutura
 
