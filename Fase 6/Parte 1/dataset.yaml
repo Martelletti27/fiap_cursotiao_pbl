@@ -1,0 +1,8 @@
+path: /content/drive/MyDrive/PBL/FASE 6/PARTE 1/dataset
+train: images/train
+val: images/val
+test: images/test
+nc: 2
+names:
+- maquinarios
+- animais

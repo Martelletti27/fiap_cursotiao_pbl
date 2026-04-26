@@ -59,12 +59,12 @@ fiap_cursotiao_pbl/
 │   └── requirements.txt
 │
 ├── Fase 5/                          # ML – rendimento de safra + cloud (AWS)
-│   ├── Parte 1/                     # Notebook, dados
-│   ├── Parte 2/                     # comparacao_aws.md
-│   └── README.md
+│   ├── Parte 1/                     # Notebook, dados + README
+│   ├── Parte 2/                     # comparacao_aws.md + README
+│   └── README.md                    # Visão geral e links às partes
 │
 ├── Fase 6/                          # (Conteúdo a documentar)
-│   ├── Parte 1/
+│   ├── Parte 1/                     # README por parte
 │   ├── Parte 2/
 │   └── README.md
 │
@@ -73,7 +73,7 @@ fiap_cursotiao_pbl/
 
 ## Fases do projeto
 
-Cada fase tem **README próprio** com resumo, estrutura e a seção **Como executar o código** (ou equivalente, conforme a tecnologia).
+Cada fase tem **README próprio** com resumo, estrutura e a seção **Como executar o código** (ou equivalente, conforme a tecnologia). As **Fases 5 e 6** têm ainda **README em cada `Parte 1` e `Parte 2`**; o README da fase aponta para eles.
 
 | Fase | Tema (resumo) | README |
 |------|----------------|--------|
@@ -81,8 +81,8 @@ Cada fase tem **README próprio** com resumo, estrutura e a seção **Como execu
 | **2** | IoT: ESP32 (Wokwi), integração Python (Open-Meteo) e R | [Fase 2/README.md](Fase%202/README.md) |
 | **3** | Importação e consultas de sensores no Oracle (SQL Developer) | [Fase 3/README.md](Fase%203/README.md) |
 | **4** | Machine Learning: previsão de umidade e dashboard Streamlit | [Fase 4/README.md](Fase%204/README.md) |
-| **5** | Previsão de rendimento (notebook) e notas de cloud (AWS) | [Fase 5/README.md](Fase%205/README.md) |
-| **6** | (A preencher) | [Fase 6/README.md](Fase%206/README.md) |
+| **5** | Previsão de rendimento (notebook) e notas de cloud (AWS) | [Fase 5 (visão geral)](Fase%205/README.md) · [P1](Fase%205/Parte%201/README.md) · [P2](Fase%205/Parte%202/README.md) |
+| **6** | (A preencher) | [Fase 6 (visão geral)](Fase%206/README.md) · [P1](Fase%206/Parte%201/README.md) · [P2](Fase%206/Parte%202/README.md) |
 
 ___________________________________________________________________________
 🧾 Licença

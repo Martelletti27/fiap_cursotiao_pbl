@@ -1,20 +1,25 @@
 # FarmTech Solutions - Fase 6
 
-<!-- Preencha com o tema, objetivos e entregas desta fase. -->
+A Fase 6 divide-se em **duas partes**; cada uma possui o próprio **README** (incluindo **Como executar o código** após o preenchimento).
 
-## Resumo
+## Partes e READMEs
 
-<!-- Descreva o que a Fase 6 aborda no projeto FarmTech. -->
+| Parte | Tema | README |
+|--------|------|--------|
+| **1** | *(A preencher)* | [Parte 1/README.md](Parte%201/README.md) |
+| **2** | *(A preencher)* | [Parte 2/README.md](Parte%202/README.md) |
 
 ## Estrutura
 
 ```
 Fase 6/
 ├── Parte 1/
+│   └── README.md
 ├── Parte 2/
+│   └── README.md
 └── README.md
 ```
 
-## Como executar o código
+## Resumo geral
 
-<!-- Instruções de instalação, dependências e comandos para executar a Parte 1 e a Parte 2. -->
+<!-- Preencha com o que a Fase 6 trata no conjunto (objetivo da fase, relação Parte 1 / Parte 2). -->
