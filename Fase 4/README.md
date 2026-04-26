@@ -10,6 +10,22 @@ Sistema completo de Machine Learning para previsão de umidade do solo e recomen
 - **Dashboard Interativo**: Interface Streamlit com 5 abas completas
 - **Carregamento Automático**: Dados meteorológicos carregados automaticamente por município
 
+## Como executar o código
+
+Na pasta do projeto (ex.: `Fase 4/` na raiz do repositório):
+
+```bash
+pip install -r requirements.txt
+```
+
+Coloque `base_sintetica_pivo_2025.csv` em `data/` ou faça upload pela interface, depois suba o dashboard:
+
+```bash
+streamlit run dashboard.py
+```
+
+Alternativa: `python run.py`. (Detalhes e troubleshooting em [QUICKSTART.md](QUICKSTART.md).)
+
 ## 🚀 Instalação
 
 1. Instale as dependências:

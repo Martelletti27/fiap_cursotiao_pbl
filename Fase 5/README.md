@@ -21,13 +21,13 @@ Fase 5/
 
 ---
 
-## Instruções de Uso
+## Como executar o código
 
 ### Parte 1 - Notebook de Machine Learning
 
 1. Instale as dependências:
    ```bash
-   pip install pandas numpy matplotlib seaborn scikit-learn
+   pip install pandas numpy matplotlib seaborn scikit-learn xgboost
    ```
 
 2. Abra o notebook na pasta `Parte 1`:

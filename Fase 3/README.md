@@ -3,6 +3,14 @@
 Este manual descreve o procedimento para importar a base de dados `fase2_sensor_readings.csv` para o banco de dados Oracle, utilizando o Oracle SQL Developer.  
 As imagens que ilustram as etapas estão armazenadas na pasta `assets/prints_oracle`.
 
+## Como executar o código
+
+A Fase 3 roda no **Oracle SQL Developer** (conexão ao schema fornecido pela FIAP). Não há um único comando de terminal; o fluxo é:
+
+1. Atender os **pré-requisitos** (conexão ao banco, schema, arquivo CSV em `assets/`).
+2. Seguir as **Etapas de importação** deste README (import Data → tabela `SENSORES_FAZENDA`).
+3. **Validar** com `select * from sensores_fazenda;` e as consultas de `scripts/Consultas.sql` (abrir o arquivo e executar no SQL Developer, conforme a necessidade).
+
 ## Pré-requisitos
 
 - Acesse um ambiente Oracle válido (schema `RM####` (seu RM FIAP) no banco `BD_FIAP_ORCL`).

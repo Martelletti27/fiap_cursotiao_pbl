@@ -23,8 +23,9 @@
 
 ## 📜 Descrição:
 
-Projeto acadêmico desenvolvido no curso de Inteligência Artificial (FIAP), com foco em soluções para Agricultura Digital.
-O grupo FarmTech Solutions propõe o desenvolvimento de sistemas inteligentes para monitoramento, automação e análise de dados agrícolas, integrando Python, R e IoT (ESP32).
+O **FarmTech Solutions** é um projeto acadêmico do curso de **Inteligência Artificial (FIAP)** com foco em **Agricultura Digital**. O repositório reúne o trabalho do grupo em **seis fases** sequenciais, da modelagem e do manejo no campo (insumos, área, tratamentos) à automação com **IoT (ESP32)**, passagem de dados de sensores para **banco de dados (Oracle)**, modelos de **aprendizado de máquina** (previsão de umidade, análise de rendimento) e apoio em **nuvem** (custo e arquitetura), além de uma **sexta fase** com entregas complementares descritas no [README da Fase 6](Fase%206/README.md).
+
+Em termos técnicos, o material integra **Python**, **R** e, conforme a fase, **SQL**, **Streamlit** e serviços de nuvem.
 
 ## 🗂 ESTRUTURA GERAL
 
@@ -34,142 +35,54 @@ fiap_cursotiao_pbl/
 ├── Fase 1/                          # Manejo e cálculo de insumos
 │   ├── apps/
 │   │   ├── python_app/              # CLI para cálculo de manejo
-│   │   └── r_app/                   # Análise de aplicação e API Meteorológica
-│   └── docs/                        # Link YouTube do funcionamento
+│   │   └── r_app/                   # Análise de tratamentos (R)
+│   ├── docs/                        # Recursos (ex.: YouTube)
+│   └── README.md
 │
-├── Fase 2/                          # Sistema de irrigação inteligente (IoT + API)
-│   └── apps/
-│       ├── esp32_app/               # Automação de irrigação com ESP32 (Wokwi)
-│       ├── python_integration/      # Integração com API Meteorológica (Open-Meteo)
-│       └── r_integration/           # Análise para decisão inteligente de irrigação
+├── Fase 2/                          # Irrigação inteligente (IoT + API)
+│   ├── apps/
+│   │   ├── esp32_app/               # ESP32 / Wokwi
+│   │   ├── python_integration/      # Open-Meteo
+│   │   └── r_integration/           # Análise e decisão de irrigação
+│   └── README.md
 │
-├── Fase 3/                          # Banco de dados e sensores
-│   ├── scripts/                    # Consultas SQL
-│   ├── assets/                     # Dados e assets
-│   └── README.md                   # Manual de importação Oracle
+├── Fase 3/                          # Banco de dados (Oracle) e sensores
+│   ├── scripts/                     # Consultas SQL
+│   ├── assets/                      # CSV e prints do manual Oracle
+│   └── README.md
 │
-├── Fase 4/                          # ML - Previsão de umidade do solo
-│   ├── dashboard.py                # Interface Streamlit
-│   ├── phase1_regression.py        # Modelos de regressão
-│   ├── weather_api.py              # API meteorológica (Open-Meteo)
-│   ├── recommendations.py          # Recomendações de irrigação
+├── Fase 4/                          # ML – previsão de umidade (Streamlit)
+│   ├── dashboard.py
+│   ├── phase1_regression.py
+│   ├── weather_api.py
+│   ├── recommendations.py
 │   └── requirements.txt
 │
-├── Fase 5/                          # ML - Previsão de rendimento + Cloud
-│   ├── Parte 1/                     # Notebook - Previsão de rendimento de safra
-│   │   ├── everton_marinhos_rm566767_pbl_fase5.ipynb
-│   │   └── data/crop_yield.csv
-│   ├── Parte 2/                     # Comparativo de custos AWS
-│   │   └── comparacao_aws.md
+├── Fase 5/                          # ML – rendimento de safra + cloud (AWS)
+│   ├── Parte 1/                     # Notebook, dados
+│   ├── Parte 2/                     # comparacao_aws.md
+│   └── README.md
+│
+├── Fase 6/                          # (Conteúdo a documentar)
+│   ├── Parte 1/
+│   ├── Parte 2/
 │   └── README.md
 │
 └── README.md                        # Este arquivo
 ```
 
-## 🔧 Como executar o código
+## Fases do projeto
 
-📘 FASE 1 - MANEJO E CALCULO DE INSUMOS
+Cada fase tem **README próprio** com resumo, estrutura e a seção **Como executar o código** (ou equivalente, conforme a tecnologia).
 
-Nesta primeira fase, foi desenvolvido um sistema em Python e R para o planejamento de manejo agrícola, permitindo o cálculo de áreas, doses de produtos e análise de tratamentos.
-
-🔹 Funcionalidades principais
-
-      Cálculo de área plantada (retangular ou pivô circular)
-
-      Estimativa de insumos e aplicações por hectare
-
-      Registro de manejos e produtos utilizados
-
-      Exportação de dados em CSV para análise no R
-
-🔗 Código: `Fase 1/apps/python_app/`
-
-
-___________________________________________________________________________
-📘 FASE 2 - SISTEMA DE IRRIGAÇÃO INTELIGENTE (IoT + API)
-
-Evolução do projeto para um sistema automatizado de irrigação, utilizando o ESP32 no Wokwi e integração com dados meteorológicos via API pública (Open-Meteo).
-
-🎯 Objetivo
-
-    Acionar automaticamente a bomba d’água (relé) com base em:
-
-    Níveis de nutrientes simulados (NPK)
-
-    Faixa de pH ideal (via LDR)
-
-    Umidade mínima (via DHT22)
-
-    Previsão de chuva e probabilidade de precipitação (POP) fornecidas pela integração Python
-
-🔧 Sensores simulados no Wokwi
-
-    Parâmetro	      Sensor/Ferramenta      Pino ESP32
-    Nitrogênio (N)	  Botão verde          12
-    Fósforo (P)	      Botão verde          13
-    Potássio (K)      Botão verde          14
-    pH                LDR                  34
-    Umidade	          DHT22                15
-    Bomba             Relé                 26
-
-🔬 Lógica de decisão da irrigação
-
-O ESP32 avalia continuamente as leituras dos sensores e o token meteorológico.
-
-    Condição                                  Ação
-    Umidade < 40%                             Irrigação permitida
-    pH entre 5.5 e 7.5	                      pH ok
-    Pelo menos 1 botão NPK ativo	            Nutrientes ok
-    Chuva prevista (rainBlock = true)	        Irrigação bloqueada
-    Todas as condições válidas	              Relé (bomba) ligado
-
-🔗 Guia detalhado de execução: `Fase 2/apps/esp32_app/README.md`
-
-___________________________________________________________________________
-📘 FASE 3 - BANCO DE DADOS E SENSORES
-
-Importação da base de sensores (fase2_sensor_readings.csv) para Oracle SQL Developer e consultas.
-
-🔗 Manual de importação: `Fase 3/README.md`
-
-___________________________________________________________________________
-📘 FASE 4 - ML - PREVISÃO DE UMIDADE DO SOLO
-
-Sistema de Machine Learning para previsão de umidade do solo e recomendações inteligentes de irrigação, com integração à API Open-Meteo.
-
-🔹 Funcionalidades principais
-- Modelos de regressão (Linear, Ridge, Lasso, Random Forest, Gradient Boosting)
-- Dashboard Streamlit interativo
-- Cronograma automático de irrigação para 7 dias
-- Integração com API meteorológica (sem cadastro)
-
-🔗 Para executar:
-```bash
-cd Fase 4
-pip install -r requirements.txt
-streamlit run dashboard.py
-```
-Consulte `Fase 4/README.md` para detalhes.
-
-___________________________________________________________________________
-📘 FASE 5 - ML - PREVISÃO DE RENDIMENTO DE SAFRA + CLOUD
-
-**Parte 1** — Notebook de Machine Learning para previsão de rendimento (ton/ha) por cultura (cacau, palma, arroz, borracha): PCA, K-Means, clustering, múltiplos modelos de regressão e simulador de produtividade.
-
-**Parte 2** — Documentação de comparativo de custos e região AWS.
-
-🔗 Para executar o notebook (Parte 1):
-```bash
-cd "Fase 5/Parte 1"
-pip install pandas numpy matplotlib seaborn scikit-learn xgboost
-# Abra everton_marinhos_rm566767_pbl_fase5.ipynb no Jupyter
-```
-Consulte `Fase 5/README.md` para detalhes.
-
-___________________________________________________________________________
-## 🗃 Histórico de lançamentos
-* 0.1.0 - 15/09/2025
-* 0.2.0 - 15/10/2025
+| Fase | Tema (resumo) | README |
+|------|----------------|--------|
+| **1** | Manejo agrícola: cálculo de insumos e áreas (Python CLI) e análise em R | [Fase 1/README.md](Fase%201/README.md) |
+| **2** | IoT: ESP32 (Wokwi), integração Python (Open-Meteo) e R | [Fase 2/README.md](Fase%202/README.md) |
+| **3** | Importação e consultas de sensores no Oracle (SQL Developer) | [Fase 3/README.md](Fase%203/README.md) |
+| **4** | Machine Learning: previsão de umidade e dashboard Streamlit | [Fase 4/README.md](Fase%204/README.md) |
+| **5** | Previsão de rendimento (notebook) e notas de cloud (AWS) | [Fase 5/README.md](Fase%205/README.md) |
+| **6** | (A preencher) | [Fase 6/README.md](Fase%206/README.md) |
 
 ___________________________________________________________________________
 🧾 Licença
