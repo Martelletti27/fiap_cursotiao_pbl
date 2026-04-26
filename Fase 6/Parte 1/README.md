@@ -16,6 +16,13 @@ O conjunto de imagens, rótulos e metadados (`images/`, `labels/`, `dataset.yaml
 
 Após o download, ajuste o campo **`path:`** em `dataset.yaml` para o caminho local (ou de ambiente de treino, ex.: Colab) onde a pasta do dataset estiver, mantendo `train`, `val` e `test` relativos a esse `path` conforme a estrutura abaixo.
 
+## Notebook (Jupyter)
+
+Treinamento/validação com YOLOv8n. Abra no Jupyter ou VS Code a partir do clone do repositório, ou use o link do GitHub:
+
+- **Arquivo (mesma pasta):** [Matheus_rm566767_pbl_fase6_Yolo8n.ipynb](Matheus_rm566767_pbl_fase6_Yolo8n.ipynb)
+- **Abrir no GitHub (navegador, branch `main`):** [Matheus_rm566767_pbl_fase6_Yolo8n.ipynb](https://github.com/Martelletti27/fiap_cursotiao_pbl/blob/main/Fase%206/Parte%201/Matheus_rm566767_pbl_fase6_Yolo8n.ipynb)
+
 ## Estrutura
 
 ```
@@ -29,6 +36,7 @@ Parte 1/
 │   ├── val/
 │   └── test/
 ├── dataset.yaml
+├── Matheus_rm566767_pbl_fase6_Yolo8n.ipynb
 └── README.md
 ```
 
