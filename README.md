@@ -23,9 +23,9 @@
 
 ## 📜 Descrição:
 
-O **FarmTech Solutions** é um projeto acadêmico do curso de **Inteligência Artificial (FIAP)** com foco em **Agricultura Digital**. O repositório reúne o trabalho do grupo em **seis fases** sequenciais, da modelagem e do manejo no campo (insumos, área, tratamentos) à automação com **IoT (ESP32)**, passagem de dados de sensores para **banco de dados (Oracle)**, modelos de **aprendizado de máquina** (previsão de umidade, análise de rendimento) e apoio em **nuvem** (custo e arquitetura), além de uma **sexta fase** com entregas complementares descritas no [README da Fase 6](Fase%206/README.md).
+O **FarmTech Solutions** é um projeto acadêmico do curso de **Inteligência Artificial (FIAP)** com foco em **Agricultura Digital**. O repositório reúne o trabalho do grupo em **seis fases** sequenciais, da modelagem e do manejo no campo (insumos, área, tratamentos) à automação com **IoT (ESP32)**, passagem de dados de sensores para **banco de dados (Oracle)**, modelos de **aprendizado de máquina** (previsão de umidade, análise de rendimento) e apoio em **nuvem** (custo e arquitetura). A **Fase 6** trata de **visão computacional** e **detecção de objetos** no contexto do campo: dataset no formato YOLO (classes *maquinário* e *animais*), com documentação, vídeo e material de apoio no [README da Fase 6](Fase%206/README.md) e na [Parte 1](Fase%206/Parte%201/README.md).
 
-Em termos técnicos, o material integra **Python**, **R** e, conforme a fase, **SQL**, **Streamlit** e serviços de nuvem.
+Em termos técnicos, o material integra **Python**, **R** e, conforme a fase, **SQL**, **Streamlit**, serviços de nuvem e, na Fase 6, **treinamento/validação** com fluxo típico YOLO (ex.: **Ultralytics**).
 
 ## 🗂 ESTRUTURA GERAL
 
@@ -63,8 +63,8 @@ fiap_cursotiao_pbl/
 │   ├── Parte 2/                     # comparacao_aws.md + README
 │   └── README.md                    # Visão geral e links às partes
 │
-├── Fase 6/                          # (Conteúdo a documentar)
-│   ├── Parte 1/                     # README por parte
+├── Fase 6/                          # Visão computacional – detecção (YOLO)
+│   ├── Parte 1/                     # Dataset: images, labels, dataset.yaml + README
 │   ├── Parte 2/
 │   └── README.md
 │
@@ -82,7 +82,7 @@ Cada fase tem **README próprio** com resumo, estrutura e a seção **Como execu
 | **3** | Importação e consultas de sensores no Oracle (SQL Developer) | [Fase 3/README.md](Fase%203/README.md) |
 | **4** | Machine Learning: previsão de umidade e dashboard Streamlit | [Fase 4/README.md](Fase%204/README.md) |
 | **5** | Previsão de rendimento (notebook) e notas de cloud (AWS) | [Fase 5 (visão geral)](Fase%205/README.md) · [P1](Fase%205/Parte%201/README.md) · [P2](Fase%205/Parte%202/README.md) |
-| **6** | (A preencher) | [Fase 6 (visão geral)](Fase%206/README.md) · [P1](Fase%206/Parte%201/README.md) · [P2](Fase%206/Parte%202/README.md) |
+| **6** | Visão computacional: detecção de objetos (YOLO), dataset *maquinário* / *animais* | [Fase 6 (visão geral)](Fase%206/README.md) · [P1](Fase%206/Parte%201/README.md) · [P2](Fase%206/Parte%202/README.md) |
 
 ___________________________________________________________________________
 🧾 Licença
