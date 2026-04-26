@@ -1,26 +1,42 @@
 # Fase 6 – Parte 1
 
-<!-- Título e objetivo desta parte da Fase 6. -->
+Entrega da **Parte 1** da Fase 6 (PBL): **detecção de objetos** com dataset no formato YOLO, com as classes **maquinário** e **animais** (`nc: 2` em `dataset.yaml`).
+
+## Vídeo (YouTube)
+
+Demonstração e contexto do trabalho no canal:
+
+**[Assistir no YouTube](https://youtu.be/EETQwaxnGd4)**
 
 ## Dataset
 
-O conjunto de imagens, rótulos e metadados (`images`, `labels`, `dataset.yaml`) está publicado no Google Drive:
+O conjunto de imagens, rótulos e metadados (`images/`, `labels/`, `dataset.yaml`) está publicado no Google Drive:
 
 **[Abrir pasta do dataset (Google Drive)](https://drive.google.com/drive/folders/11R9UVX61jsb6zilf1-w5yRy4QxGQtnvL?usp=sharing)**
 
-Faça o download da pasta (ou arquivos) para a máquina e coloque no caminho que o treinamento/validação espera (ex.: `dataset/` ao lado do código, conforme o script ou o `README` da tarefa).
+Após o download, ajuste o campo **`path:`** em `dataset.yaml` para o caminho local (ou de ambiente de treino, ex.: Colab) onde a pasta do dataset estiver, mantendo `train`, `val` e `test` relativos a esse `path` conforme a estrutura abaixo.
 
 ## Estrutura
 
 ```
 Parte 1/
-├── dataset/        # (opcional) após baixar o conteúdo do Drive; nomes reais: images, labels, dataset.yaml
+├── images/
+│   ├── train/
+│   ├── val/
+│   └── test/
+├── labels/
+│   ├── train/
+│   ├── val/
+│   └── test/
+├── dataset.yaml
 └── README.md
 ```
 
 ## Como executar o código
 
-<!-- Comandos, dependências, ambiente (Python, YOLO, etc.). -->
+- Dependências usuais: **Python 3.10+**, **PyTorch** (conforme seu ambiente) e **Ultralytics** (`pip install ultralytics`) para YOLOv8, ou outro framework indicado no enunciado da disciplina.
+- Aponte o treinamento para o `dataset.yaml` desta pasta (ou cópia com `path` corrigido) e use as pastas `images/*` e `labels/*` já alinhadas por split.
+- Se usar Colab/Drive, sincronize a pasta do dataset e atualize `path` em `dataset.yaml` de acordo.
 
 ---
 
