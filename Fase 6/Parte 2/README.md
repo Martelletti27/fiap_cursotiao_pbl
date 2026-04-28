@@ -43,17 +43,18 @@ permitindo uma análise comparativa direta entre detecção e classificação de
 
 | Métrica | YOLOv8n (Parte 1 — 30 épocas) | YOLOv8n (Parte 1 — 60 épocas) | YOLOv5n (Parte 2 — 30 épocas) |
 |---------|-------------------------------|-------------------------------|-------------------------------|
-| Precision |0.8771 |0.8266 |0.818 | N/A |
-| Recall |0.7827 |0.7557 |0.847| N/A |
-| mAP50 |0.8570 |0.8596 | 0.859 | N/A |
-| mAP50-95 |0.5965 |0.5945 |0.523 | N/A |
+| Precision |0.8771 |0.8266 |0.818 |
+| Recall |0.7827 |0.7557 |0.847 |
+| mAP50 |0.8570 |0.8596 | 0.859 |
+| mAP50-95 |0.5965 |0.5945 |0.523 |
 
 | CNN do Zero (Parte 2 — 30 épocas) |
-|-----------------------------------|
+| Métrica | Valor |
+|---------|-------|
 | Acurácia no teste |0.500 |
 | Loss no teste |60.4551 |
 | Tempo de treinamento (30 épocas) | 47.04 segundos |
-| Tempo médio de inferência por imagem |0.0135|
+| Tempo médio de inferência por imagem |0.0135 |
 
 ---
 
