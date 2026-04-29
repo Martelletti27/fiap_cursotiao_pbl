@@ -16,6 +16,19 @@ O conjunto de imagens, rótulos e metadados (`images/`, `labels/`, `dataset.yaml
 
 Após o download, ajuste o campo **`path:`** em `dataset.yaml` para o caminho local (ou de ambiente de treino, ex.: Colab) onde a pasta do dataset estiver, mantendo `train`, `val` e `test` relativos a esse `path` conforme a estrutura abaixo.
 
+### Composição do dataset
+
+| Split | Imagens | Rótulos | Animais | Maquinários |
+|-------|---------|---------|---------|-------------|
+| Train | 120 | 120 | 61 | 59 |
+| Val | 20 | 20 | 10 | 10 |
+| Test | 20 | — | 10 | 10 |
+| **Total** | **160** | **140** | **81** | **79** |
+
+### Rotulação
+
+A rotulação das imagens de treinamento e validação foi realizada utilizando o [Make Sense AI](https://www.makesense.ai/), ferramenta online gratuita de anotação de imagens. As coordenadas de bounding box foram exportadas no **formato YOLO** (classe + coordenadas normalizadas `x_center y_center width height`), gerando um arquivo `.txt` por imagem nas pastas `labels/train/` e `labels/val/`.
+
 ## Notebook (Jupyter)
 
 Treinamento/validação com YOLOv8n. Abra no Jupyter ou VS Code a partir do clone do repositório, ou use o link do GitHub:
@@ -27,17 +40,18 @@ Treinamento/validação com YOLOv8n. Abra no Jupyter ou VS Code a partir do clon
 ```
 Parte 1/
 ├── images/
-│   ├── train/
-│   ├── val/
-│   └── test/
+│   ├── train/              # 120 imagens de treino
+│   ├── val/                # 20 imagens de validação
+│   └── test/               # 20 imagens de teste (inferência)
 ├── labels/
-│   ├── train/
-│   ├── val/
-│   └── test/
+│   ├── train/              # 120 rótulos YOLO
+│   └── val/                # 20 rótulos YOLO
 ├── dataset.yaml
 ├── Matheus_rm566767_pbl_fase6_Yolo8n.ipynb
 └── README.md
 ```
+
+> **Nota:** A pasta `labels/test/` não é necessária, pois o split de teste é utilizado apenas para **inferência** (predição), sem avaliação de ground truth.
 
 ## Como executar o código
 

@@ -27,8 +27,9 @@ Após o download, ajuste o campo `path:` em `dataset.yaml` para o caminho local
 
 ## Notebooks
 
-Por motivos de incompatibilidade com o github devido ao seu grande tamanho, os arquivos ipynb estarão disponíveis do link a seguir:
-**[Arquivos ipynb (Google Drive)](https://drive.google.com/drive/folders/1RFXR6AFstpbRqcZLYk97am6OGSk3ghef)**
+> **Nota sobre o tamanho dos arquivos:** Os notebooks executados com outputs (imagens de detecção embutidas) excedem o limite de 100 MB do GitHub. Por esse motivo, as versões com todos os outputs estão disponíveis no Google Drive:
+>
+> **[Abrir notebooks executados (Google Drive)](https://drive.google.com/drive/folders/1RFXR6AFstpbRqcZLYk97am6OGSk3ghef)**
 
 | Abordagem | Arquivo | Descrição |
 |-----------|---------|-----------|
@@ -42,22 +43,36 @@ Por motivos de incompatibilidade com o github devido ao seu grande tamanho, os a
 A Fase 6 contempla três abordagens distintas aplicadas ao mesmo dataset,
 permitindo uma análise comparativa direta entre detecção e classificação de objetos.
 
-### Métricas de Desempenho
+### Métricas de Desempenho — YOLO (Detecção)
 
 | Métrica | YOLOv8n (Parte 1 — 30 épocas) | YOLOv8n (Parte 1 — 60 épocas) | YOLOv5n (Parte 2 — 30 épocas) |
 |---------|-------------------------------|-------------------------------|-------------------------------|
-| Precision |0.8771 |0.8266 |0.818 |
-| Recall |0.7827 |0.7557 |0.847 |
-| mAP50 |0.8570 |0.8596 | 0.859 |
-| mAP50-95 |0.5965 |0.5945 |0.523 |
+| Precision | 0.8771 | 0.8266 | 0.818 |
+| Recall | 0.7827 | 0.7557 | 0.847 |
+| mAP50 | 0.8570 | 0.8596 | 0.859 |
+| mAP50-95 | 0.5965 | 0.5945 | 0.523 |
 
-| CNN do Zero (Parte 2 — 30 épocas) |
+### Métricas de Desempenho — CNN do Zero (Classificação)
+
 | Métrica | Valor |
 |---------|-------|
-| Acurácia no teste |0.500 |
-| Loss no teste |60.4551 |
+| Acurácia no teste | 0.500 |
+| Loss no teste | 60.4551 |
 | Tempo de treinamento (30 épocas) | 47.04 segundos |
-| Tempo médio de inferência por imagem |0.0135 |
+| Tempo médio de inferência por imagem | 0.0135 segundos |
+
+### Avaliação Comparativa dos 4 Critérios
+
+Conforme solicitado no enunciado, avaliamos as três abordagens em 4 eixos:
+
+| Critério | YOLOv8n (Parte 1) | YOLOv5n (Parte 2) | CNN do Zero (Parte 2) |
+|----------|-------------------|--------------------|-----------------------|
+| **Facilidade de uso/integração** | Alta — API Ultralytics simplificada (`model.train()`, `model.predict()`), poucas linhas de código | Moderada — requer clone do repo YOLOv5, scripts separados para treino/val/teste | Moderada — arquitetura definida manualmente camada a camada, exige mais conhecimento de redes neurais |
+| **Precisão do modelo** | mAP50 = 0.857 (30 ép.) / 0.860 (60 ép.) | mAP50 = 0.859 | Acurácia = 0.500 (equivalente a chute aleatório) |
+| **Tempo de treinamento** | ~5–10 min (30 ép., Colab GPU T4) | ~5–10 min (30 ép., Colab GPU T4) | 47 segundos (30 ép., CPU) |
+| **Tempo de inferência** | ~10–20 ms/imagem (GPU) | ~10–20 ms/imagem (GPU) | 13.5 ms/imagem (CPU) |
+
+> **Nota:** Os tempos de treinamento do YOLO são estimativas baseadas no ambiente Google Colab com GPU T4 para um dataset de 120 imagens. A CNN treina em CPU por ser uma rede pequena.
 
 ---
 
@@ -96,9 +111,12 @@ balanceado e com técnicas de transfer learning aplicadas.
 
 ## Estrutura
 
----
-
-Fase 6/Parte 2/ ├── Felipe_rm567521_pbl_fase6_Yolo5n.ipynb ├── Felipe_rm567521_pbl_fase6_CNN.ipynb └── README.md
+```
+Fase 6/Parte 2/
+├── Felipe_rm567521_pbl_fase6_Yolo5n.ipynb   # Detecção com YOLOv5n
+├── Felipe_rm567521_pbl_fase6_CNN.ipynb      # Classificação com CNN do zero
+└── README.md
+```
 
 ---
 
