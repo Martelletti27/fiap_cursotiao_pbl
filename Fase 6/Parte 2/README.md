@@ -27,6 +27,9 @@ Após o download, ajuste o campo `path:` em `dataset.yaml` para o caminho local
 
 ## Notebooks
 
+Por motivos de incompatibilidade com o github devido ao seu grande tamanho, os arquivos ipynb estarão disponíveis do link a seguir:
+**[Arquivos ipynb (Google Drive)](https://drive.google.com/drive/folders/1RFXR6AFstpbRqcZLYk97am6OGSk3ghef)**
+
 | Abordagem | Arquivo | Descrição |
 |-----------|---------|-----------|
 | YOLOv5n | `Felipe_rm567521_pbl_fase6_Yolo5n.ipynb` | Detecção com YOLOv5n — 30 épocas |
