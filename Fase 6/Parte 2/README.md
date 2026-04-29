@@ -8,7 +8,7 @@ computacional para detecção e classificação de objetos em fazendas (classes:
 
 ## Vídeo (YouTube)
 
-> Link será adicionado em breve.
+**[Abrir vídeo do Youtube](https://youtu.be/coX2I5HWBNk)**
 
 ---
 
