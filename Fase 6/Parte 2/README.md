@@ -14,9 +14,9 @@ computacional para detecção e classificação de objetos em fazendas (classes:
 
 ## Dataset
 
-O mesmo conjunto de imagens utilizado na Parte 1 (Matheus) foi reaproveitado
+O mesmo conjunto de imagens utilizado na Parte 1 foi reaproveitado
 nesta entrega. As imagens, rótulos e metadados (`images/`, `labels/`, `dataset.yaml`)
-estão publicados no Google Drive do colega:
+estão publicados no Google Drive:
 
 **[Abrir pasta do dataset (Google Drive)](https://drive.google.com/drive/folders/11R9UVX61jsb6zilf1-w5yRy4QxGQtnvL?usp=sharing)**
 
