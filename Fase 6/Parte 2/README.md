@@ -33,7 +33,7 @@ Após o download, ajuste o campo `path:` em `dataset.yaml` para o caminho local
 
 | Abordagem | Arquivo | Descrição |
 |-----------|---------|-----------|
-| YOLOv5n | `Felipe_rm567521_pbl_fase6_Yolo5n.ipynb` | Detecção com YOLOv5n — 30 épocas |
+| YOLOv5n | `Felipe_rm567521_pbl_fase6_Yolo5n_v1.ipynb` | Detecção com YOLOv5n — 30 épocas |
 | CNN do Zero | `Felipe_rm567521_pbl_fase6_CNN.ipynb` | Classificação binária com CNN treinada do zero — 30 épocas |
 
 ---
@@ -113,7 +113,7 @@ balanceado e com técnicas de transfer learning aplicadas.
 
 ```
 Fase 6/Parte 2/
-├── Felipe_rm567521_pbl_fase6_Yolo5n.ipynb   # Detecção com YOLOv5n
+├── Felipe_rm567521_pbl_fase6_Yolo5n_v1.ipynb   # Detecção com YOLOv5n
 ├── Felipe_rm567521_pbl_fase6_CNN.ipynb      # Classificação com CNN do zero
 └── README.md
 ```
@@ -123,7 +123,7 @@ Fase 6/Parte 2/
 ## Como Executar
 
 **YOLOv5:**
-1. Abra o notebook `Felipe_rm567521_pbl_fase6_Yolo5n.ipynb` no Colab
+1. Abra o notebook `Felipe_rm567521_pbl_fase6_Yolo5n_v1.ipynb` no Colab
 2. Ative GPU T4 em `Ambiente de execução → Alterar tipo de ambiente de execução`
 3. Execute as células em ordem — o notebook clona o repositório YOLOv5, instala
    as dependências e aponta para o dataset no Drive automaticamente

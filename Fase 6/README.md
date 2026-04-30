@@ -27,7 +27,7 @@ Fase 6/
 │   ├── Matheus_rm566767_pbl_fase6_Yolo8n.ipynb
 │   └── README.md
 ├── Parte 2/
-│   ├── Felipe_rm567521_pbl_fase6_Yolo5n.ipynb
+│   ├── Felipe_rm567521_pbl_fase6_Yolo5n_v1.ipynb
 │   ├── Felipe_rm567521_pbl_fase6_CNN.ipynb
 │   └── README.md
 └── README.md
